@@ -1,0 +1,509 @@
+////////////////
+// OBSERVED DATA
+////////////////
+
+var prod_data1 = { // without training
+    jump_over: {
+      agent_falls:  {the_agent:  27, it: 17, zero: 58},
+      patient_falls: {the_patient:  77, it: 2, zero: 4}
+    },
+    wave: {
+      agent_falls:  {the_agent:  44, it: 26, zero: 37},
+      patient_falls: {the_patient:  105, it: 3, zero: 0}
+    },
+    attack: {
+      agent_falls:  {the_agent:  37, it: 16, zero: 56},
+      patient_falls: {the_patient:  62, it: 9, zero: 1}
+    },
+    throw_rock: {
+      agent_falls:  {the_agent:  87, it: 12, zero: 10},
+      patient_falls: {the_patient:  78, it: 5, zero: 1}
+    },
+    overall: {
+      agent_falls:  {the_agent:  205, it: 79, zero: 161},
+      patient_falls: {the_patient:  383, it: 69, zero: 7}
+    }
+}
+
+var prod_data2 = { // with training
+    jump_over: {
+      agent_falls:  {the_agent:  51, it: 12, zero: 36},
+      patient_falls: {the_patient:  92, it: 0, zero: 1}
+    },
+    wave: {
+      agent_falls:  {the_agent:  52, it: 17, zero: 31},
+      patient_falls: {the_patient:  90, it: 2, zero: 3}
+    },
+    attack: {
+      agent_falls:  {the_agent:  41, it: 7, zero: 17},
+      patient_falls: {the_patient:  46, it: 4, zero: 1}
+    },
+    throw_rock: {
+      agent_falls:  {the_agent:  87, it: 8, zero: 10},
+      patient_falls: {the_patient:  86, it: 5, zero: 0}
+    },
+    overall: {
+      agent_falls:  {the_agent:  256, it: 56, zero: 97},
+      patient_falls: {the_patient:  366, it: 24, zero: 7}
+    }
+}
+
+var prod_data = prod_data1
+
+var perc_data1 = { // without noise
+  jump_over: {
+    it: {agent_falls: 22, patient_falls: 20},
+    zero: {agent_falls: 50, patient_falls: 0}
+  },
+  wave: {
+    it: {agent_falls: 16, patient_falls: 22},
+    zero: {agent_falls: 47, patient_falls: 7}
+  },
+  attack: {
+    it: {agent_falls: 17, patient_falls: 33},
+    zero: {agent_falls: 41, patient_falls: 1}
+  },
+  throw_rock: {
+    it: {agent_falls: 10, patient_falls: 34},
+    zero: {agent_falls: 28, patient_falls: 8}
+  },
+  overall: {
+    it: {agent_falls: 65, patient_falls: 109},
+    zero: {agent_falls: 176, patient_falls: 16}
+  },
+}
+
+var perc_data2 = { // with noise full data
+  jump_over: {
+    it: {agent_falls: 60, patient_falls: 10},
+    zero: {agent_falls: 97, patient_falls: 4}
+  },
+  wave: {
+    it: {agent_falls: 42, patient_falls: 22},
+    zero: {agent_falls: 75, patient_falls: 8}
+  },
+  attack: {
+    it: {agent_falls: 56, patient_falls: 33},
+    zero: {agent_falls: 74, patient_falls: 10}
+  },
+  throw_rock: {
+    it: {agent_falls: 34, patient_falls: 35},
+    zero: {agent_falls: 78, patient_falls: 17}
+  },
+  overall: {
+    it: {agent_falls: 199, patient_falls: 100},
+    zero: {agent_falls: 324, patient_falls: 39}
+  },
+}
+
+var perc_data3 = { // low noise
+  jump_over: {
+    it: {agent_falls: 29, patient_falls: 6},
+    zero: {agent_falls: 52, patient_falls: 0}
+  },
+  wave: {
+    it: {agent_falls: 25, patient_falls: 10},
+    zero: {agent_falls: 44, patient_falls: 4}
+  },
+  attack: {
+    it: {agent_falls: 33, patient_falls: 21},
+    zero: {agent_falls: 42, patient_falls: 6}
+  },
+  throw_rock: {
+    it: {agent_falls: 16, patient_falls: 20},
+    zero: {agent_falls: 36, patient_falls: 6}
+  },
+  overall: {
+    it: {agent_falls: 103, patient_falls: 57},
+    zero: {agent_falls: 184, patient_falls: 16}
+  },
+}
+
+var perc_data4 = { // high noise
+  jump_over: {
+    it: {agent_falls: 31, patient_falls: 4},
+    zero: {agent_falls: 45, patient_falls: 4}
+  },
+  wave: {
+    it: {agent_falls: 24, patient_falls: 12},
+    zero: {agent_falls: 31, patient_falls: 4}
+  },
+  attack: {
+    it: {agent_falls: 23, patient_falls: 12},
+    zero: {agent_falls: 32, patient_falls: 4}
+  },
+  throw_rock: {
+    it: {agent_falls: 18, patient_falls: 15},
+    zero: {agent_falls: 32, patient_falls: 11}
+  },
+  overall: {
+    it: {agent_falls: 96, patient_falls: 43},
+    zero: {agent_falls: 140, patient_falls: 23}
+  },
+}
+
+var perc_data = perc_data1
+
+var priors = {
+  jump_over: 0.4391667,
+  wave: 0.6422917,
+  attack: 0.6800000,
+  throw_rock: 0.9372917,
+  overall: 0.67585
+}
+
+////////////
+// RSA MODEL
+////////////
+
+// set of states
+var states = ["agent_falls", "patient_falls"]
+
+// set of utterances
+var utterances = ["the_agent", "the_patient", "it", "zero"]
+
+var meaning_table = {
+  agent_falls: {the_agent: 1, the_patient: 0, it: 1, zero: 1},
+  patient_falls: {the_agent: 0, the_patient: 1, it: 1, zero: 0}
+}
+
+var patientBiasPrior = function(action)
+{
+  return priors[action]
+  //return (action == 'jump_over') ? beta({a:0.5451610, b:0.6961924}) : ((action == 'wave') ? beta({a:1.1358936, b:0.6326076}) : ((action == 'attack') ? beta({a:1.0033267, b:0.4721537}) : beta({a:2.970715, b:0.198752})))
+}
+
+var stateByPrior = function(action) {
+  var p = patientBiasPrior(action)
+  var state_id = +flip(p)
+  return states[state_id]
+}
+
+// meaning function to interpret the utterances
+var meaning = function(utterance, state){
+  meaning_table[state][utterance]
+}
+
+
+// DIRECT RSA
+
+// literal listener
+var literalListener = function(action, utterance, certain_zero, certain_it, agent_bias){
+  Infer
+  (
+    {
+      model: function()
+      {
+        var state = stateByPrior(action);
+        
+        // Transforming zero to it or vice versa with parametrized probabilities
+        var ut = ((utterance == 'zero' && flip(1-certain_zero)) ? ("it") : ((utterance == 'it' && flip(1-certain_it)) ? ("zero") : (utterance)))
+        
+        // Introducing agent bias in interpreting pronoun
+        var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
+        
+        condition(meaning(ut2, state))
+
+        return state
+      }//,
+      //method: "rejection"
+    }
+  )
+}
+
+// function for utterance costs
+var cost = function(utterance, np_cost, pro_cost) {
+  (utterance === "the_agent" || utterance === "the_patient") ? np_cost : ((utterance == "it") ? pro_cost : 0)
+}
+
+// pragmatic speaker
+var speaker = function(action, state, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost){
+  Infer({model: function(){
+    var utterance = uniformDraw(utterances)
+    factor(alpha * (literalListener(action, utterance, certain_zero, certain_it, agent_bias).score(state)
+                    - cost(utterance, np_cost, pro_cost))
+          )
+    return utterance
+  }})
+}
+
+// pragmatic listener
+var pragmaticListener = function(action, utterance, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost){
+  Infer
+  (
+    {
+      model: function()
+      {
+        var state = stateByPrior(action)
+        observe(speaker(action, state, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost), utterance)
+        return state
+      }//,
+      //method: "rejection"
+    }
+  )
+}
+
+
+// INVERSE RSA
+
+// literal speaker
+var literalSpeaker = function(state){
+  Infer({model: function(){
+    var utterance = uniformDraw(utterances)
+    condition(meaning(utterance, state))
+    return utterance
+  }})
+}
+
+// pragmatic listener
+var listener = function(action, utterance, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost){
+  Infer
+  (
+    {
+      model: function()
+      {
+        var state = stateByPrior(action)
+
+        // Transforming zero to it or vice versa with parametrized probabilities
+        var ut = ((utterance == 'zero' && flip(1-certain_zero)) ? ("it") : ((utterance == 'it' && flip(1-certain_it)) ? ("zero") : (utterance)))
+
+        // Introducing agent bias in interpreting pronoun
+        var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
+        
+        observe(literalSpeaker(state), ut2)
+        
+        return state
+      }//,
+      //method: "rejection"
+    }
+  )
+}
+
+// pragmatic speaker
+var pragmaticSpeaker = function(action, state, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost){
+  Infer
+  (
+    {
+      model: function()
+      {
+        var utterance = uniformDraw(utterances)
+        factor(alpha * (listener(action, utterance, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost).score(state))
+               -cost(utterance, np_cost, pro_cost)
+              )
+        return utterance
+      }//,
+      //method: "rejection"
+    }
+  )
+}
+
+
+////////////////
+// Data Analysis
+////////////////
+
+var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost){
+
+  // priors over parameters of interest
+
+  var alpha = uniform({a:0, b:10})
+  var certain_zero = uniform({a:0.5, b:1})
+  var certain_it = uniform({a:0.5, b:1})
+  var agent_bias = uniform({a:0.5, b:1})
+  var np_cost = (cost == "np" || cost == "both") ? uniform({a:-4, b:4}) : (0)
+  var pro_cost = (cost == "pro" || cost == "both") ? uniform({a:-4, b:4}) : (0)
+  
+  var testSpeaker = (speaker_type == 'literal') ? literalSpeaker : ((speaker_type == 'direct') ? speaker : pragmaticSpeaker)
+  var testListener = (listener_type == 'literal') ? literalListener : ((listener_type == 'direct') ? pragmaticListener : listener)
+
+  // speaker production part
+
+  var PP_speaker = (speaker_type == 'none') ? (null) : (
+    map(function(action){
+      map(function(s){ 
+
+        var speaker_predictions = testSpeaker(action, s, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost)
+        var speaker_data = prod_data[action][s]
+
+        var utt_probs = map(function(u){
+          return Math.exp(speaker_predictions.score(u))
+        }, _.keys(speaker_data))
+
+        var utt_count = map(function(u){
+          return speaker_data[u]
+        }, _.keys(speaker_data))
+
+        observe(Multinomial({n: sum(utt_count),
+                             ps: utt_probs}),
+                utt_count)
+
+        return multinomial({n: sum(utt_count), ps: utt_probs})
+
+      }, states)
+    }, actions))
+
+  // listener comprehension part
+
+  var PP_listener = (listener_type == 'none') ? (null) : (
+    map(function(action){
+      map(function(u){ 
+
+        var listener_predictions = testListener(action, u, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost)
+        var listener_data = perc_data[action][u]
+
+        var int_probs = map(function(s){
+          return Math.exp(listener_predictions.score(s))
+        }, _.keys(listener_data))
+
+        var int_count = map(function(s){
+          return listener_data[s]
+        }, _.keys(listener_data))
+
+        observe(Multinomial({n: sum(int_count),
+                             ps: int_probs}),
+                int_count)
+
+        return multinomial({n: sum(int_count), ps: int_probs})
+
+      }, ['it', 'zero'])
+    }, actions))
+
+  if (goal == 'params')
+    return {alpha: alpha, certain_zero: certain_zero, certain_it: certain_it, agent_bias: agent_bias, np_cost: np_cost, pro_cost: pro_cost}
+  else // if (goal == 'samples')
+    return {PP_speaker: PP_speaker, PP_listener: PP_listener}
+}
+
+var rateModel = function(actions, speaker_type, listener_type, cost){
+
+  // priors over parameters of interest
+
+  var alpha = uniform({a:0, b:10})
+  var certain_zero = uniform({a:0.5, b:1})
+  var certain_it = uniform({a:0.5, b:1})
+  var agent_bias = uniform({a:0.5, b:1})
+  var np_cost = (cost == "np" || cost == "both") ? uniform({a:-4, b:4}) : (0)
+  var pro_cost = (cost == "pro" || cost == "both") ? uniform({a:-4, b:4}) : (0)
+  
+  var testSpeaker = (speaker_type == 'literal') ? literalSpeaker : ((speaker_type == 'direct') ? speaker : pragmaticSpeaker)
+  var testListener = (listener_type == 'literal') ? literalListener : ((listener_type == 'direct') ? pragmaticListener : listener)
+
+  // speaker production part
+
+  var speaker_score = (speaker_type == 'none') ? (0) : (sum(
+    map(function(action){
+      return sum(
+        map(function(s){
+
+          var speaker_predictions = testSpeaker(action, s, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost)
+          var speaker_data = prod_data[action][s]
+
+          var utt_probs = map(function(u){
+            return Math.exp(speaker_predictions.score(u))
+          }, _.keys(speaker_data))
+
+          var utt_count = map(function(u){
+            return speaker_data[u]
+          }, _.keys(speaker_data))
+
+          return Multinomial({n: sum(utt_count), ps: utt_probs}).score(utt_count)
+
+        }, states))
+    }, actions)))
+
+  // listener comprehension part
+
+  var listener_score = (listener_type == 'none') ? (0) : (sum(
+    map(function(action){
+      return sum(
+        map(function(u){
+
+          var listener_predictions = testListener(action, u, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost)
+          var listener_data = perc_data[action][u]
+
+          var int_probs = map(function(s){
+            return Math.exp(listener_predictions.score(s))
+          }, _.keys(listener_data))
+
+          var int_count = map(function(s){
+            return listener_data[s]
+          }, _.keys(listener_data))
+
+          return Multinomial({n: sum(int_count), ps: int_probs}).score(int_count)
+
+        }, ['it', 'zero']))
+    }, actions)))
+
+  return Math.exp(speaker_score + listener_score)
+}
+
+var estimateParams = function(actions, speaker_type, listener_type, cost, n_samples)
+{
+  var parameter_estimation = Infer({
+    method: "MCMC",
+    samples: n_samples,
+    burn: 100,
+    model: function() {dataAnalysis(actions, 'params', speaker_type, listener_type, cost)}})
+
+  viz(parameter_estimation)
+  viz.marginals(parameter_estimation)
+
+  print("var alpha = " + expectation(marginalize(parameter_estimation, "alpha")))
+  print("var certain_zero = " + expectation(marginalize(parameter_estimation, "certain_zero")))
+  print("var certain_it = " + expectation(marginalize(parameter_estimation, "certain_it")))
+  print("var agent_bias = " + expectation(marginalize(parameter_estimation, "agent_bias")))
+  print("var np_cost = " + expectation(marginalize(parameter_estimation, "np_cost")))
+  print("var pro_cost = " + expectation(marginalize(parameter_estimation, "pro_cost")))
+}
+
+var getSamples = function(actions, speaker_type, listener_type, cost, n_samples)
+{
+  var samples = Infer({
+    method: "MCMC",
+    samples: n_samples,
+    burn: 100,
+    model: function() {dataAnalysis(actions, 'samples', speaker_type, listener_type, cost)}})
+
+  print(JSON.stringify(samples.support()))
+}
+
+var compareModels = function(actions, cost, n_samples)
+{
+  var direct_direct = expectation(Infer({
+    method: "forward",
+    samples: n_samples,
+    model: function() {rateModel(actions, 'direct', 'direct', cost)}}))
+
+  var inverse_inverse = expectation(Infer({
+    method: "forward",
+    samples: n_samples,
+    model: function() {rateModel(actions, 'inverse', 'inverse', cost)}}))
+
+  var direct_inverse = expectation(Infer({
+    method: "forward",
+    samples: n_samples,
+    model: function() {rateModel(actions, 'direct', 'inverse', cost)}}))
+
+  var inverse_direct = expectation(Infer({
+    method: "forward",
+    samples: n_samples,
+    model: function() {rateModel(actions, 'inverse', 'direct', cost)}}))
+
+  print('1. Direct speaker, direct listener: ' + direct_direct)
+  print('2. Inverse speaker, inverse listener: ' + inverse_inverse + ', ' + ((inverse_inverse > direct_direct) ? (inverse_inverse/direct_direct + ' times better then the 1st'):(direct_direct/inverse_inverse + ' times worse then the 1st')))
+  print('3. Direct speaker, inverse listener: ' + direct_inverse + ', ' + ((direct_inverse > direct_direct) ? (direct_inverse/direct_direct + ' times better then the 1st'):(direct_direct/direct_inverse + ' times worse then the 1st')))
+  print('4. Inverse speaker, direct listener: ' + inverse_direct + ', ' + ((inverse_direct > direct_direct) ? (inverse_direct/direct_direct + ' times better then the 1st'):(direct_direct/inverse_direct + ' times worse then the 1st')))
+}
+
+
+//var actions = ['jump_over', 'wave', 'attack', 'throw_rock']
+var actions = ['overall']
+
+// 1. Returns mean values of the model parameters estimated based on the experimental data
+estimateParams(actions, 'direct', 'direct', 'none', 20000)
+
+// 2. Gets samples to test the porsterior predictions of the model (copy the output to data.json file and process it in R) 
+//getSamples(actions, 'direct', 'direct', 'none', 5000)
+
+// 3. Compares different RSA models: direct, inverse and two mixed ones. Bigger number is better
+//compareModels(actions, 'none', 10000)
