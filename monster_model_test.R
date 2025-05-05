@@ -2,7 +2,7 @@ library(tidyverse)
 library(ggplot2)
 library(jsonlite)
 
-json <- read_json("data.json")
+json <- read_json("sample.json")
 
 #actions <- c('jump_over', 'wave', 'attack', 'throw_rock')
 actions <- c('overall')
@@ -65,7 +65,7 @@ speaker_data %>%
     
 
 
-json <- read_json("data.json")
+json <- read_json("sample.json")
 
 listener_data = data.frame(action=character(), utterance=character(), state=character(), count=integer())
 

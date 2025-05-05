@@ -502,7 +502,7 @@ var actions = ['overall']
 // 1. Returns mean values of the model parameters estimated based on the experimental data
 estimateParams(actions, 'direct', 'direct', 'none', 20000)
 
-// 2. Gets samples to test the porsterior predictions of the model (copy the output to data.json file and process it in R) 
+// 2. Gets samples to test the porsterior predictions of the model (copy the output to sample.json file and process it in R) 
 //getSamples(actions, 'direct', 'direct', 'none', 5000)
 
 // 3. Compares different RSA models: direct, inverse and two mixed ones. Bigger number is better
