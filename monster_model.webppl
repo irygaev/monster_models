@@ -48,8 +48,6 @@ var prod_data2 = { // with training
     }
 }
 
-var prod_data = prod_data1
-
 var perc_data1 = { // without noise
   jump_over: {
     it: {agent_falls: 22, patient_falls: 20},
@@ -142,8 +140,6 @@ var perc_data4 = { // high noise
   },
 }
 
-var perc_data = perc_data1
-
 var priors = {
   jump_over: 0.4391667,
   wave: 0.6422917,
@@ -167,14 +163,17 @@ var meaning_table = {
   patient_falls: {the_agent: 0, the_patient: 1, it: 1, zero: 0}
 }
 
-var patientBiasPrior = function(action)
+var patientBiasPrior = function(action, prior)
 {
-  return priors[action]
+  if (prior == -1)
+    return priors[action]
+  else
+    return prior
   //return (action == 'jump_over') ? beta({a:0.5451610, b:0.6961924}) : ((action == 'wave') ? beta({a:1.1358936, b:0.6326076}) : ((action == 'attack') ? beta({a:1.0033267, b:0.4721537}) : beta({a:2.970715, b:0.198752})))
 }
 
-var stateByPrior = function(action) {
-  var p = patientBiasPrior(action)
+var stateByPrior = function(action, prior) {
+  var p = patientBiasPrior(action, prior)
   var state_id = +flip(p)
   return states[state_id]
 }
@@ -188,21 +187,16 @@ var meaning = function(utterance, state){
 // DIRECT RSA
 
 // literal listener
-var literalListener = function(action, utterance, certain_zero, certain_it, agent_bias){
+var literalListener = function(action, utterance, certain_zero, certain_it, agent_bias, prior){
   Infer
   (
     {
       model: function()
       {
-        var state = stateByPrior(action);
-        
-        // Transforming zero to it or vice versa with parametrized probabilities
-        var ut = ((utterance == 'zero' && flip(1-certain_zero)) ? ("it") : ((utterance == 'it' && flip(1-certain_it)) ? ("zero") : (utterance)))
-        
-        // Introducing agent bias in interpreting pronoun
-        var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
-        
-        condition(meaning(ut2, state))
+        //var state = stateByPrior(action, prior);
+        var state = uniformDraw(states)
+
+        condition(meaning(utterance, state))
 
         return state
       }//,
@@ -217,10 +211,10 @@ var cost = function(utterance, np_cost, pro_cost) {
 }
 
 // pragmatic speaker
-var speaker = function(action, state, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost){
+var speaker = function(action, state, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost){
   Infer({model: function(){
     var utterance = uniformDraw(utterances)
-    factor(alpha * (literalListener(action, utterance, certain_zero, certain_it, agent_bias).score(state)
+    factor(alpha * (literalListener(action, utterance, certain_zero, certain_it, agent_bias, prior).score(state)
                     - cost(utterance, np_cost, pro_cost))
           )
     return utterance
@@ -228,19 +222,36 @@ var speaker = function(action, state, alpha, certain_zero, certain_it, agent_bia
 }
 
 // pragmatic listener
-var pragmaticListener = function(action, utterance, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost){
+var pragmaticListener = function(action, utterance, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost){
   Infer
   (
     {
       model: function()
       {
         var state = stateByPrior(action)
-        observe(speaker(action, state, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost), utterance)
+
+        // Transforming zero to it or vice versa with parametrized probabilities
+        var ut = ((utterance == 'zero' && flip(1-certain_zero)) ? ("it") : ((utterance == 'it' && flip(1-certain_it)) ? ("zero") : (utterance)))
+        
+        // Introducing agent bias in interpreting pronoun
+        var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
+        
+        observe(speaker(action, state, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost), ut2)
         return state
       }//,
       //method: "rejection"
     }
   )
+}
+
+// hyperpragmatic speaker
+var pragmaticSpeaker2 = function(action, state, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost)
+{
+  Infer({model: function(){
+    var utterance = uniformDraw(utterances)
+    observe(pragmaticListener(action, utterance, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost), state)
+    return utterance
+  }})
 }
 
 
@@ -256,13 +267,13 @@ var literalSpeaker = function(state){
 }
 
 // pragmatic listener
-var listener = function(action, utterance, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost){
+var listener = function(action, utterance, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost){
   Infer
   (
     {
       model: function()
       {
-        var state = stateByPrior(action)
+        var state = stateByPrior(action, prior)
 
         // Transforming zero to it or vice versa with parametrized probabilities
         var ut = ((utterance == 'zero' && flip(1-certain_zero)) ? ("it") : ((utterance == 'it' && flip(1-certain_it)) ? ("zero") : (utterance)))
@@ -280,14 +291,14 @@ var listener = function(action, utterance, alpha, certain_zero, certain_it, agen
 }
 
 // pragmatic speaker
-var pragmaticSpeaker = function(action, state, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost){
+var pragmaticSpeaker = function(action, state, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost){
   Infer
   (
     {
       model: function()
       {
         var utterance = uniformDraw(utterances)
-        factor(alpha * (listener(action, utterance, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost).score(state))
+        factor(alpha * (listener(action, utterance, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost).score(state))
                -cost(utterance, np_cost, pro_cost)
               )
         return utterance
@@ -302,18 +313,20 @@ var pragmaticSpeaker = function(action, state, alpha, certain_zero, certain_it, 
 // Data Analysis
 ////////////////
 
-var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost){
+var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost, params){
 
   // priors over parameters of interest
 
-  var alpha = uniform({a:0, b:10})
-  var certain_zero = uniform({a:0.5, b:1})
+  var alpha = ('alpha' in params) ? params['alpha'] : uniform({a:0, b:10});
+  var certain_zero = ('certain_zero' in params) ? params['certain_zero'] : uniform({a:0.5, b:1});
+  //var certain_it = certain_zero;
   var certain_it = uniform({a:0.5, b:1})
-  var agent_bias = uniform({a:0.5, b:1})
-  var np_cost = (cost == "np" || cost == "both") ? uniform({a:-4, b:4}) : (0)
-  var pro_cost = (cost == "pro" || cost == "both") ? uniform({a:-4, b:4}) : (0)
+  var agent_bias = ('agent_bias' in params) ? params['agent_bias'] : uniform({a:0.5, b:1})
+  var prior = -1;//uniform({a:0, b:1})
+  var np_cost = (cost == "np" || cost == "both") ? uniform({a:0, b:4}) : (0)
+  var pro_cost = (cost == "pro" || cost == "both") ? uniform({a:0, b:4}) : (0)
   
-  var testSpeaker = (speaker_type == 'literal') ? literalSpeaker : ((speaker_type == 'direct') ? speaker : pragmaticSpeaker)
+  var testSpeaker = (speaker_type == 'literal') ? literalSpeaker : ((speaker_type == 'direct') ? speaker : ((speaker_type == 'direct2') ? pragmaticSpeaker2 : pragmaticSpeaker))
   var testListener = (listener_type == 'literal') ? literalListener : ((listener_type == 'direct') ? pragmaticListener : listener)
 
   // speaker production part
@@ -322,7 +335,7 @@ var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost){
     map(function(action){
       map(function(s){ 
 
-        var speaker_predictions = testSpeaker(action, s, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost)
+        var speaker_predictions = testSpeaker(action, s, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost)
         var speaker_data = prod_data[action][s]
 
         var utt_probs = map(function(u){
@@ -348,7 +361,7 @@ var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost){
     map(function(action){
       map(function(u){ 
 
-        var listener_predictions = testListener(action, u, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost)
+        var listener_predictions = testListener(action, u, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost)
         var listener_data = perc_data[action][u]
 
         var int_probs = map(function(s){
@@ -369,23 +382,25 @@ var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost){
     }, actions))
 
   if (goal == 'params')
-    return {alpha: alpha, certain_zero: certain_zero, certain_it: certain_it, agent_bias: agent_bias, np_cost: np_cost, pro_cost: pro_cost}
+    return {alpha: alpha, certain_zero: certain_zero, certain_it: certain_it, agent_bias: agent_bias, np_cost: np_cost, pro_cost: pro_cost, prior: prior}
   else // if (goal == 'samples')
     return {PP_speaker: PP_speaker, PP_listener: PP_listener}
 }
 
-var rateModel = function(actions, speaker_type, listener_type, cost){
+var rateModel = function(actions, speaker_type, listener_type, cost, params){
 
   // priors over parameters of interest
 
-  var alpha = uniform({a:0, b:10})
-  var certain_zero = uniform({a:0.5, b:1})
-  var certain_it = uniform({a:0.5, b:1})
-  var agent_bias = uniform({a:0.5, b:1})
-  var np_cost = (cost == "np" || cost == "both") ? uniform({a:-4, b:4}) : (0)
-  var pro_cost = (cost == "pro" || cost == "both") ? uniform({a:-4, b:4}) : (0)
+  var alpha = ('alpha' in params) ? params['alpha'] : uniform({a:0, b:10});
+  var certain_zero = ('certain_zero' in params) ? params['certain_zero'] : uniform({a:0.5, b:1});
+  var certain_it = certain_zero;
+  //var certain_it = uniform({a:0.5, b:1})
+  var agent_bias = ('agent_bias' in params) ? params['agent_bias'] : uniform({a:0.5, b:1})
+  var prior = -1;//uniform({a:0, b:1})
+  var np_cost = (cost == "np" || cost == "both") ? uniform({a:0, b:4}) : (0)
+  var pro_cost = (cost == "pro" || cost == "both") ? uniform({a:0, b:4}) : (0)
   
-  var testSpeaker = (speaker_type == 'literal') ? literalSpeaker : ((speaker_type == 'direct') ? speaker : pragmaticSpeaker)
+  var testSpeaker = (speaker_type == 'literal') ? literalSpeaker : ((speaker_type == 'direct') ? speaker : ((speaker_type == 'direct2') ? pragmaticSpeaker2 : pragmaticSpeaker))
   var testListener = (listener_type == 'literal') ? literalListener : ((listener_type == 'direct') ? pragmaticListener : listener)
 
   // speaker production part
@@ -395,7 +410,7 @@ var rateModel = function(actions, speaker_type, listener_type, cost){
       return sum(
         map(function(s){
 
-          var speaker_predictions = testSpeaker(action, s, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost)
+          var speaker_predictions = testSpeaker(action, s, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost)
           var speaker_data = prod_data[action][s]
 
           var utt_probs = map(function(u){
@@ -418,7 +433,7 @@ var rateModel = function(actions, speaker_type, listener_type, cost){
       return sum(
         map(function(u){
 
-          var listener_predictions = testListener(action, u, alpha, certain_zero, certain_it, agent_bias, np_cost, pro_cost)
+          var listener_predictions = testListener(action, u, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost)
           var listener_data = perc_data[action][u]
 
           var int_probs = map(function(s){
@@ -439,11 +454,13 @@ var rateModel = function(actions, speaker_type, listener_type, cost){
 
 var estimateParams = function(actions, speaker_type, listener_type, cost, n_samples)
 {
+  var params = {};
+  
   var parameter_estimation = Infer({
     method: "MCMC",
     samples: n_samples,
     burn: 100,
-    model: function() {dataAnalysis(actions, 'params', speaker_type, listener_type, cost)}})
+    model: function() {dataAnalysis(actions, 'params', speaker_type, listener_type, cost, params)}})
 
   viz(parameter_estimation)
   viz.marginals(parameter_estimation)
@@ -452,42 +469,47 @@ var estimateParams = function(actions, speaker_type, listener_type, cost, n_samp
   print("var certain_zero = " + expectation(marginalize(parameter_estimation, "certain_zero")))
   print("var certain_it = " + expectation(marginalize(parameter_estimation, "certain_it")))
   print("var agent_bias = " + expectation(marginalize(parameter_estimation, "agent_bias")))
+  print("var prior = " + expectation(marginalize(parameter_estimation, "prior")))
   print("var np_cost = " + expectation(marginalize(parameter_estimation, "np_cost")))
   print("var pro_cost = " + expectation(marginalize(parameter_estimation, "pro_cost")))
 }
 
 var getSamples = function(actions, speaker_type, listener_type, cost, n_samples)
 {
+  var params = {};
+
   var samples = Infer({
     method: "MCMC",
     samples: n_samples,
     burn: 100,
-    model: function() {dataAnalysis(actions, 'samples', speaker_type, listener_type, cost)}})
+    model: function() {dataAnalysis(actions, 'samples', speaker_type, listener_type, cost, params)}})
 
   print(JSON.stringify(samples.support()))
 }
 
 var compareModels = function(actions, cost, n_samples)
 {
+  var params = {};
+  
   var direct_direct = expectation(Infer({
     method: "forward",
     samples: n_samples,
-    model: function() {rateModel(actions, 'direct', 'direct', cost)}}))
+    model: function() {rateModel(actions, 'direct', 'direct', cost, params)}}))
 
   var inverse_inverse = expectation(Infer({
     method: "forward",
     samples: n_samples,
-    model: function() {rateModel(actions, 'inverse', 'inverse', cost)}}))
+    model: function() {rateModel(actions, 'inverse', 'inverse', cost, params)}}))
 
   var direct_inverse = expectation(Infer({
     method: "forward",
     samples: n_samples,
-    model: function() {rateModel(actions, 'direct', 'inverse', cost)}}))
+    model: function() {rateModel(actions, 'direct', 'inverse', cost, params)}}))
 
   var inverse_direct = expectation(Infer({
     method: "forward",
     samples: n_samples,
-    model: function() {rateModel(actions, 'inverse', 'direct', cost)}}))
+    model: function() {rateModel(actions, 'inverse', 'direct', cost, params)}}))
 
   print('1. Direct speaker, direct listener: ' + direct_direct)
   print('2. Inverse speaker, inverse listener: ' + inverse_inverse + ', ' + ((inverse_inverse > direct_direct) ? (inverse_inverse/direct_direct + ' times better then the 1st'):(direct_direct/inverse_inverse + ' times worse then the 1st')))
@@ -495,15 +517,40 @@ var compareModels = function(actions, cost, n_samples)
   print('4. Inverse speaker, direct listener: ' + inverse_direct + ', ' + ((inverse_direct > direct_direct) ? (inverse_direct/direct_direct + ' times better then the 1st'):(direct_direct/inverse_direct + ' times worse then the 1st')))
 }
 
+var gridSearch = function(actions, cost, n_samples, alpha1, alpha2, certain1, certain2, bias1, bias2)
+{
+  var params = {alpha: alpha1, certain_zero: certain1, agent_bias: bias1};
+  
+  var steps = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  
+  map(
+    function(step)
+    {
+      var alpha = alpha1 + (alpha2-alpha1)/10*step;
+    },
+    steps
+  );
+  
+  var direct_direct = expectation(Infer({
+    method: "forward",
+    samples: n_samples,
+    model: function() {rateModel(actions, 'direct', 'direct', cost, params)}}))
+}
+
+
+var prod_data = prod_data2
+var perc_data = perc_data2
 
 //var actions = ['jump_over', 'wave', 'attack', 'throw_rock']
 var actions = ['overall']
 
 // 1. Returns mean values of the model parameters estimated based on the experimental data
-estimateParams(actions, 'direct', 'direct', 'none', 20000)
+//estimateParams(actions, 'direct2', 'direct', 'none', 20000)
 
 // 2. Gets samples to test the porsterior predictions of the model (copy the output to sample.json file and process it in R) 
-//getSamples(actions, 'direct', 'direct', 'none', 5000)
+getSamples(actions, 'direct2', 'direct', 'none', 5000)
 
 // 3. Compares different RSA models: direct, inverse and two mixed ones. Bigger number is better
 //compareModels(actions, 'none', 10000)
+
+//literalListener("overall", "zero", 0.6, 0.6, 0.6, 0.5)
