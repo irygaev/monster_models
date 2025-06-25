@@ -193,10 +193,18 @@ var literalListener = function(action, utterance, certain_zero, certain_it, agen
     {
       model: function()
       {
-        //var state = stateByPrior(action, prior);
-        var state = uniformDraw(states)
+        var state = stateByPrior(action, prior);
+        //var state = uniformDraw(states)
 
-        condition(meaning(utterance, state))
+        // Transforming zero to it or vice versa with parametrized probabilities
+        var ut = ((utterance == 'zero' && flip(1-certain_zero)) ? ("it") : ((utterance == 'it' && flip(1-certain_it)) ? ("zero") : (utterance)))
+        
+        // Introducing agent bias in interpreting pronoun
+        var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
+        condition(meaning(ut2, state))
+        
+        //var f = (ut == 'it') ? ((state == 'the_agent') ? (agent_bias) : (1-agent_bias)) : meaning(ut, state);
+        //factor(Math.log(f));        
 
         return state
       }//,
@@ -230,13 +238,7 @@ var pragmaticListener = function(action, utterance, alpha, certain_zero, certain
       {
         var state = stateByPrior(action)
 
-        // Transforming zero to it or vice versa with parametrized probabilities
-        var ut = ((utterance == 'zero' && flip(1-certain_zero)) ? ("it") : ((utterance == 'it' && flip(1-certain_it)) ? ("zero") : (utterance)))
-        
-        // Introducing agent bias in interpreting pronoun
-        var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
-        
-        observe(speaker(action, state, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost), ut2)
+        observe(speaker(action, state, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost), utterance)
         return state
       }//,
       //method: "rejection"
@@ -319,8 +321,8 @@ var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost, pa
 
   var alpha = ('alpha' in params) ? params['alpha'] : uniform({a:0, b:10});
   var certain_zero = ('certain_zero' in params) ? params['certain_zero'] : uniform({a:0.5, b:1});
-  //var certain_it = certain_zero;
-  var certain_it = uniform({a:0.5, b:1})
+  var certain_it = certain_zero;
+  //var certain_it = uniform({a:0.5, b:1})
   var agent_bias = ('agent_bias' in params) ? params['agent_bias'] : uniform({a:0.5, b:1})
   var prior = -1;//uniform({a:0, b:1})
   var np_cost = (cost == "np" || cost == "both") ? uniform({a:0, b:4}) : (0)
@@ -545,10 +547,10 @@ var perc_data = perc_data2
 var actions = ['overall']
 
 // 1. Returns mean values of the model parameters estimated based on the experimental data
-//estimateParams(actions, 'direct2', 'direct', 'none', 20000)
+estimateParams(actions, 'direct', 'direct', 'none', 20000)
 
 // 2. Gets samples to test the porsterior predictions of the model (copy the output to sample.json file and process it in R) 
-getSamples(actions, 'direct2', 'direct', 'none', 5000)
+//getSamples(actions, 'direct', 'direct', 'none', 5000)
 
 // 3. Compares different RSA models: direct, inverse and two mixed ones. Bigger number is better
 //compareModels(actions, 'none', 10000)
