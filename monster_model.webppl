@@ -379,8 +379,12 @@ var patientBiasPrior = function(action, prior)
   //return (action == 'jump_over') ? beta({a:0.5451610, b:0.6961924}) : ((action == 'wave') ? beta({a:1.1358936, b:0.6326076}) : ((action == 'attack') ? beta({a:1.0033267, b:0.4721537}) : beta({a:2.970715, b:0.198752})))
 }
 
-var stateByPrior = function(action, prior) {
-  var p = patientBiasPrior(action, prior)
+var stateByPrior = function(action, prior, salience_prior) {
+  var p1 = patientBiasPrior(action, prior)
+  var p2 = 1 - salience_prior
+  
+  var p = p1 * p2 / (p1 * p2 + (1 - p1) * (1 - p2))
+  
   var state_id = +flip(p)
   return states[state_id]
 }
@@ -394,13 +398,13 @@ var meaning = function(utterance, state){
 // DIRECT RSA
 
 // literal listener
-var literalListener = function(action, utterance, certain_zero, certain_it, agent_bias, prior){
+var literalListener_salience = function(action, utterance, certain_zero, certain_it, agent_bias, prior){
   Infer
   (
     {
       model: function()
       {
-        var state = stateByPrior(action, prior);
+        var state = stateByPrior(action, prior, agent_bias);
         //var state = uniformDraw(states)
 
         var certain_zero2 = certain_zero / (certain_zero + 1 - certain_it)
@@ -410,8 +414,40 @@ var literalListener = function(action, utterance, certain_zero, certain_it, agen
         var ut = ((utterance == 'zero' && flip(1-certain_zero2)) ? ("it") : ((utterance == 'it' && flip(1-certain_it2)) ? ("zero") : (utterance)))
         
         // Introducing agent bias in interpreting pronoun
+        //var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
+        var ut2 = ut
+        
+        condition(meaning(ut2, state))
+        
+        //var f = (ut == 'it') ? ((state == 'the_agent') ? (agent_bias) : (1-agent_bias)) : meaning(ut, state);
+        //factor(Math.log(f));        
+
+        return state
+      }//,
+      //method: "rejection"
+    }
+  )
+}
+
+var literalListener = function(action, utterance, certain_zero, certain_it, agent_bias, prior){
+  Infer
+  (
+    {
+      model: function()
+      {
+        var state = stateByPrior(action, prior, 0.5);
+        //var state = uniformDraw(states)
+
+        var certain_zero2 = certain_zero / (certain_zero + 1 - certain_it)
+        var certain_it2 = certain_it / (certain_it + 1 - certain_zero)
+
+        // Transforming zero to it or vice versa with parametrized probabilities
+        var ut = ((utterance == 'zero' && flip(1 - certain_zero2)) ? ("it") : ((utterance == 'it' && flip(1 - certain_it2)) ? ("zero") : (utterance)))
+        
+        // Introducing agent bias in interpreting pronoun
         var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
         //var ut2 = ut
+        
         condition(meaning(ut2, state))
         
         //var f = (ut == 'it') ? ((state == 'the_agent') ? (agent_bias) : (1-agent_bias)) : meaning(ut, state);
@@ -478,23 +514,26 @@ var speaker = function(action, state, alpha, certain_zero, certain_it, agent_bia
       )
     )
     
-    // Transforming zero to it or vice versa with parametrized probabilities
-    //var ut = ((utterance == 'zero' && flip(1-certain_zero)) ? ("it") : ((utterance == 'it' && flip(1-certain_it)) ? ("zero") : (utterance)))
-    
     factor(alpha * (Math.log(p1) - cost(utterance, np_cost, pro_cost)))
     
+    // Transforming zero to it or vice versa with parametrized probabilities
+    /*var ut = ((utterance == 'zero' && flip(1-certain_zero)) ? ("it") : ((utterance == 'it' && flip(1-certain_it)) ? ("zero") : (utterance)))
+    
+    factor(alpha * (literalListener(action, ut, certain_zero, certain_it, agent_bias, prior).score(state) - cost(utterance, np_cost, pro_cost)))
+    */
+
     return utterance
   }})
 }
 
 // pragmatic listener
-var pragmaticListener = function(action, utterance, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost){
+var pragmaticListener_salience = function(action, utterance, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost){
   Infer
   (
     {
       model: function()
       {
-        var state = stateByPrior(action, prior)
+        var state = stateByPrior(action, prior, agent_bias)
 
         var certain_zero2 = certain_zero / (certain_zero + 1 - certain_it)
         var certain_it2 = certain_it / (certain_it + 1 - certain_zero)
@@ -502,6 +541,32 @@ var pragmaticListener = function(action, utterance, alpha, certain_zero, certain
         // Transforming zero to it or vice versa with parametrized probabilities
         var ut = ((utterance == 'zero' && flip(1-certain_zero2)) ? ("it") : ((utterance == 'it' && flip(1-certain_it2)) ? ("zero") : (utterance)))
         
+        // Introducing agent bias in interpreting pronoun
+        //var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
+        var ut2 = ut
+
+        observe(speaker(action, state, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost), ut2)
+        return state
+      }//,
+      //method: "rejection"
+    }
+  )
+}
+
+var pragmaticListener = function(action, utterance, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost){
+  Infer
+  (
+    {
+      model: function()
+      {
+        var state = stateByPrior(action, prior, 0.5)
+
+        var certain_zero2 = certain_zero / (certain_zero + 1 - certain_it)
+        var certain_it2 = certain_it / (certain_it + 1 - certain_zero)
+
+        // Transforming zero to it or vice versa with parametrized probabilities
+        var ut = ((utterance == 'zero' && flip(1 - certain_zero2)) ? ("it") : ((utterance == 'it' && flip(1 - certain_it2)) ? ("zero") : (utterance)))
+         
         // Introducing agent bias in interpreting pronoun
         var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
         //var ut2 = ut
@@ -587,14 +652,20 @@ var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost, pa
 
   // priors over parameters of interest
 
-  var alpha = ('alpha' in params) ? params['alpha'] : uniform({a:0, b:10});
-  var certain_zero = ('certain_zero' in params) ? params['certain_zero'] : uniform({a:0.5, b:1});
-  var certain_it = certain_zero;
-  //var certain_it = uniform({a:0.5, b:1})
-  var agent_bias = ('agent_bias' in params) ? params['agent_bias'] : uniform({a:0.5, b:1})
+var alpha = 2.215864232108754
+var certain_clean = 0.9281444051101283
+var certain_low = 0.8494245560615307
+var certain_high = 0.7800296072700961
+var agent_bias = 0.7314575660840608
+
+  //var alpha = ('alpha' in params) ? params['alpha'] : uniform({a:1, b:4});
+  var certain_zero = ('certain_zero' in params) ? params['certain_zero'] : uniform({a:0, b:1});
+  //var certain_it = certain_zero;
+  var certain_it = uniform({a:0, b:certain_zero})
+  //var agent_bias = ('agent_bias' in params) ? params['agent_bias'] : uniform({a:0.5, b:1})
   var prior = -1;//uniform({a:0, b:1})
-  var np_cost = 0 //(cost == "np" || cost == "both") ? uniform({a:0, b:4}) : (0)
-  var pro_cost = 0 //(cost == "pro" || cost == "both") ? uniform({a:0, b:4}) : (0)
+  var np_cost = (cost == "np" || cost == "both") ? uniform({a:0, b:4}) : (0)
+  var pro_cost = (cost == "pro" || cost == "both") ? uniform({a:0, b:np_cost}) : (0)
   
   var jump_over_prior = uniform({a:0, b:1})
   var wave_prior = uniform({a:0, b:1})
@@ -602,12 +673,15 @@ var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost, pa
   var throw_rock_prior = uniform({a:0, b:1})
   var overall_prior = uniform({a:0, b:1})
   
-  var local_priors = {jump_over: jump_over_prior, wave: wave_prior, attack: attack_prior, throw_rock: throw_rock_prior, overall: overall_prior}
-  //var local_priors = priors
+  //var local_priors = {jump_over: jump_over_prior, wave: wave_prior, attack: attack_prior, throw_rock: throw_rock_prior, overall: overall_prior}
+  var local_priors = priors
   
-  var certain_clean = uniform({a:0.5, b:1})
-  var certain_low = uniform({a:0.5, b:1})
-  var certain_high = uniform({a:0.5, b:1})
+  //var certain_clean = uniform({a:0.5, b:1})
+  var certain_clean_it = uniform({a:0.5, b:certain_clean})
+  //var certain_low = uniform({a:0.5, b:1})
+  var certain_low_it = uniform({a:0.5, b:certain_low})
+  //var certain_high = uniform({a:0.5, b:1})
+  var certain_high_it = uniform({a:0.5, b:certain_high})
 
   var testSpeaker = (speaker_type == 'literal') ? literalSpeaker : ((speaker_type == 'direct') ? speaker : ((speaker_type == 'direct2') ? pragmaticSpeaker2 : pragmaticSpeaker))
   var testListener = (listener_type == 'literal') ? literalListener : ((listener_type == 'direct') ? pragmaticListener : listener)
@@ -662,7 +736,10 @@ var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost, pa
         return multinomial({n: sum(int_count), ps: int_probs})
 
       }, ['it', 'zero'])
-    }, actions))*/
+    }, actions))
+  
+  var PP_listener2 = null
+  var PP_listener3 = null*/
 
   var PP_listener = (listener_type == 'none') ? (null) : (
     map(function(action){
@@ -737,9 +814,9 @@ var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost, pa
     }, actions))
 
   if (goal == 'params')
-    return {alpha: alpha, certain_zero: certain_zero, certain_it: certain_it, certain_clean: certain_clean, certain_low: certain_low, certain_high: certain_high, agent_bias: agent_bias, np_cost: np_cost, pro_cost: pro_cost, prior: prior, jump_over_prior: jump_over_prior, wave_prior: wave_prior, attack_prior: attack_prior, throw_rock_prior: throw_rock_prior}
+    return {alpha: alpha, certain_zero: certain_zero, certain_it: certain_it, certain_clean: certain_clean, certain_clean_it: certain_clean_it, certain_low: certain_low, certain_low_it: certain_low_it, certain_high: certain_high, certain_high_it: certain_high_it, agent_bias: agent_bias, np_cost: np_cost, pro_cost: pro_cost, prior: prior, jump_over_prior: jump_over_prior, wave_prior: wave_prior, attack_prior: attack_prior, throw_rock_prior: throw_rock_prior, overall_prior: overall_prior}
   else // if (goal == 'samples')
-    return {PP_speaker: PP_speaker, PP_listener: PP_listener}
+    return {PP_speaker: PP_speaker, PP_listener: PP_listener, PP_listener2: PP_listener2, PP_listener3: PP_listener3}
 }
 
 var rateModel = function(actions, speaker_type, listener_type, cost, params){
@@ -824,8 +901,11 @@ var estimateParams = function(actions, speaker_type, listener_type, cost, n_samp
   print("var certain_zero = " + expectation(marginalize(parameter_estimation, "certain_zero")))
   print("var certain_it = " + expectation(marginalize(parameter_estimation, "certain_it")))
   print("var certain_clean = " + expectation(marginalize(parameter_estimation, "certain_clean")))
+  print("var certain_clean_it = " + expectation(marginalize(parameter_estimation, "certain_clean_it")))
   print("var certain_low = " + expectation(marginalize(parameter_estimation, "certain_low")))
+  print("var certain_low_it = " + expectation(marginalize(parameter_estimation, "certain_low_it")))
   print("var certain_high = " + expectation(marginalize(parameter_estimation, "certain_high")))
+  print("var certain_high_it = " + expectation(marginalize(parameter_estimation, "certain_high_it")))
   print("var agent_bias = " + expectation(marginalize(parameter_estimation, "agent_bias")))
   print("var prior = " + expectation(marginalize(parameter_estimation, "prior")))
   print("var jump_over_prior = " + expectation(marginalize(parameter_estimation, "jump_over_prior")))
@@ -902,16 +982,16 @@ var gridSearch = function(actions, cost, n_samples, alpha1, alpha2, certain1, ce
 
 
 var prod_data = prod_data_training_familiar
-var perc_data = perc_data_noise
+var perc_data = perc_data_high_noise
 
 //var actions = ['jump_over', 'wave', 'attack', 'throw_rock']
 var actions = ['overall']
 
 // 1. Returns mean values of the model parameters estimated based on the experimental data
-estimateParams(actions, 'none', 'direct', 'none', 20000)
+//estimateParams(actions, 'none', 'direct', 'none', 10000)
 
 // 2. Gets samples to test the porsterior predictions of the model (copy the output to sample.json file and process it in R) 
-//getSamples(actions, 'direct', 'direct', 'none', 5000)
+getSamples(actions, 'none', 'direct', 'none', 5000)
 
 // 3. Compares different RSA models: direct, inverse and two mixed ones. Bigger number is better
 //compareModels(actions, 'none', 10000)
@@ -919,9 +999,9 @@ estimateParams(actions, 'none', 'direct', 'none', 20000)
 /*
 var action = "overall"
 var utterance = "zero"
-var certain_zero = 0.8
-var certain_it = 0.8
-var agent_bias = 0.5
+var certain_zero = 1
+var certain_it = 0.7
+var agent_bias = 0.75
 var prior = 0.68
 
 var state = "agent_falls"
@@ -932,9 +1012,12 @@ var pro_cost = 0
 var l0 = literalListener(action, utterance, certain_zero, certain_it, agent_bias, prior)
 display(l0)
 
-var s1 = speaker(action, state, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost)
-display(s1)
+var l0t = literalListener_salience(action, utterance, certain_zero, certain_it, agent_bias, prior)
+display(l0t)
 
-var l1 = pragmaticListener(action, utterance, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost)
-display(l1)
+//var s1 = speaker(action, state, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost)
+//display(s1)
+
+//var l1 = pragmaticListener(action, utterance, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost)
+//display(l1)
 */
