@@ -2,15 +2,15 @@ library(tidyverse)
 library(ggplot2)
 library(jsonlite)
 
-#actions <- c('jump_over', 'wave', 'attack', 'throw_rock')
+actions <- c('jump_over', 'wave', 'attack', 'throw_rock')
 #actions <- c('throw_rock')
-actions <- c('overall')
+#actions <- c('overall')
 states <- c('agent_falls', 'patient_falls')
 utterances <- c('np', 'pro', 'zero')
 
 json <- read_json("sample.json")
 
-speaker_data = data.frame(action=character(), state=character(), utterance=character(), count=integer())
+speaker_data1 = data.frame(action=character(), state=character(), utterance=character(), count=integer())
 
 action_list = c()
 state_list = c()
@@ -39,7 +39,40 @@ for (i in 1:length(json)) {
 }
 
 rows = list(action = action_list, state = state_list, utterance = utterance_list, count = count_list)
-speaker_data = rbind(speaker_data, rows)
+speaker_data1 = rbind(speaker_data1, rows)
+
+speaker_data2 = data.frame(action=character(), state=character(), utterance=character(), count=integer())
+
+action_list = c()
+state_list = c()
+utterance_list = c()
+count_list = c()
+
+for (i in 1:length(json)) {
+    sample <- json[[i]]$PP_speaker2
+    
+    for (j in 1:length(actions)) {
+        action <- actions[j]
+        
+        for (k in 1:length(states)) {
+            state <- states[k]
+            
+            for (l in 1:length(utterances))  {
+                utterance <- utterances[l]
+                
+                action_list = append(action_list, action)
+                state_list = append(state_list, state)
+                utterance_list = append(utterance_list, utterance)
+                count_list = append(count_list, strtoi(sample[[j]][[k]][[l]]))
+            }
+        }
+    }
+}
+
+rows = list(action = action_list, state = state_list, utterance = utterance_list, count = count_list)
+speaker_data2 = rbind(speaker_data1, rows)
+
+speaker_data <- speaker_data2
 
 speaker_data$count = as.numeric(speaker_data$count)
 
@@ -62,7 +95,7 @@ speaker_data %>%
     geom_density() +
     geom_point(data = speaker_gold, aes(x = count, y = 0, color = "red")) +
     facet_grid(action ~ state + utterance) +
-    ylim(0, 0.2)
+    ylim(0, 0.3)
 
 speaker_gold %>%
     group_by(action, state, utterance) %>%
