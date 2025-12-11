@@ -399,7 +399,7 @@ var meaning = function(utterance, state){
 // DIRECT RSA
 
 // literal listener
-var literalListener = function(action, patient_color, utterance, certain_zero, certain_it, agent_bias, prior, train_prior){
+var literalListener = function(action, patient_color, utterance, alpha, certain_zero, certain_it, agent_bias, prior, train_prior, np_cost, pro_cost){
   Infer
   (
     {
@@ -430,7 +430,7 @@ var literalListener = function(action, patient_color, utterance, certain_zero, c
   )
 }
 
-var literalListener_simple = function(action, patient_color, utterance, certain_zero, certain_it, agent_bias, prior, train_prior){
+var literalListener_simple = function(action, patient_color, utterance, alpha, certain_zero, certain_it, agent_bias, prior, train_prior, np_cost, pro_cost){
   Infer
   (
     {
@@ -508,7 +508,7 @@ var speaker = function(action, patient_color, state, alpha, certain_zero, certai
           p_confuse(utterance, p_utt, certain_zero, certain_it) *
           Math.exp
           (
-            literalListener(action, patient_color, p_utt, certain_zero, certain_it, agent_bias, prior, train_prior).score(state)
+            literalListener(action, patient_color, p_utt, alpha, certain_zero, certain_it, agent_bias, prior, train_prior, np_cost, pro_cost).score(state)
           )
         },
         utterances
@@ -653,35 +653,51 @@ var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost, pa
 
   // priors over parameters of interest
 
+var alpha_prod = 3.196357715990756
+var certain_zero = 0.9009528804057871
+var certain_it = 0.7644075023404083
+var certain_surp = 0.6119727950857633
+var certain_surp_it = 0.5452660924045324
+var certain_low = 0.9201772410609999
+var certain_low_it = 0.8254770063204621
+var certain_high = 0.7974014959138062
+var certain_high_it = 0.6743168632307904
+var agent_bias = 0.75
+var train_prior = 0.5980961561234336
+var jump_over_prior = 0.4131743041897438
+var wave_prior = 0.636905925950353
+var attack_prior = 0.6833511184767463
+var throw_rock_prior = 0.7945793434767273
+
   var alpha = ('alpha' in params) ? params['alpha'] : uniform({a:0, b:10});
-  var alpha_prod = ('alpha' in params) ? params['alpha'] : uniform({a:0, b:10});
-  var certain_zero = ('certain_zero' in params) ? params['certain_zero'] : uniform({a:0.5, b:1});
+  //var alpha_prod = ('alpha' in params) ? params['alpha'] : uniform({a:0, b:10});
+  //var certain_zero = ('certain_zero' in params) ? params['certain_zero'] : uniform({a:0.5, b:1});
   //var certain_it = certain_zero;
-  var certain_it = uniform({a:0.5, b:certain_zero})
-  var certain_surp = uniform({a:0.5, b:1})
-  var certain_surp_it = uniform({a:0.5, b:certain_surp})
-  var agent_bias = ('agent_bias' in params) ? params['agent_bias'] : uniform({a:0.5, b:1})
-  var prior = -1;//uniform({a:0, b:1})
+  //var certain_it = uniform({a:0.5, b:certain_zero})
+  //var certain_surp = uniform({a:0.5, b:1})
+  //var certain_surp_it = uniform({a:0.5, b:certain_surp})
+  //var agent_bias = 0.75//('agent_bias' in params) ? params['agent_bias'] : uniform({a:0.5, b:1})
+  //var prior = -1;//uniform({a:0, b:1})
   var np_cost = (cost == "np" || cost == "both") ? uniform({a:0, b:4}) : (0)
   var pro_cost = (cost == "pro" || cost == "both") ? uniform({a:0, b:np_cost}) : (0)
   
-  var jump_over_prior = uniform({a:0, b:1})
-  var wave_prior = uniform({a:0, b:1})
-  var attack_prior = uniform({a:0, b:1})
-  var throw_rock_prior = uniform({a:0, b:1})
+  //var jump_over_prior = uniform({a:0, b:1})
+  //var wave_prior = uniform({a:0, b:1})
+  //var attack_prior = uniform({a:0, b:1})
+  //var throw_rock_prior = uniform({a:0, b:1})
   var overall_prior = uniform({a:0, b:1})
   
   var local_priors = {jump_over: jump_over_prior, wave: wave_prior, attack: attack_prior, throw_rock: throw_rock_prior, overall: overall_prior}
   //var local_priors = priors
   
-  var train_prior = uniform({a:0.5, b:1})
+  //var train_prior = uniform({a:0.5, b:1})
   
   var certain_clean = uniform({a:0.5, b:1})
   var certain_clean_it = uniform({a:0.5, b:certain_clean})
-  var certain_low = uniform({a:0.5, b:1})
-  var certain_low_it = uniform({a:0.5, b:certain_low})
-  var certain_high = uniform({a:0.5, b:1})
-  var certain_high_it = uniform({a:0.5, b:certain_high})
+  //var certain_low = uniform({a:0.5, b:1})
+  //var certain_low_it = uniform({a:0.5, b:certain_low})
+  //var certain_high = uniform({a:0.5, b:1})
+  //var certain_high_it = uniform({a:0.5, b:certain_high})
 
   var testSpeaker = (speaker_type == 'literal') ? literalSpeaker : ((speaker_type == 'direct') ? speaker : ((speaker_type == 'direct2') ? pragmaticSpeaker2 : pragmaticSpeaker))
   var testListener = (listener_type == 'literal') ? literalListener : ((listener_type == 'direct') ? pragmaticListener : listener)
@@ -801,7 +817,9 @@ var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost, pa
   var PP_listener2 = null
   var PP_listener3 = null*/
 
-  var PP_listener = (listener_type == 'none') ? (null) : (
+  var PP_listener = null
+  
+  /*var PP_listener = (listener_type == 'none') ? (null) : (
     map(function(action){
       map(function(u){ 
 
@@ -823,7 +841,7 @@ var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost, pa
         return multinomial({n: sum(int_count), ps: int_probs})
 
       }, ['it', 'zero'])
-    }, actions))
+    }, actions))*/
 
   var PP_listener2 = (listener_type == 'none') ? (null) : (
     map(function(action){
@@ -874,7 +892,7 @@ var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost, pa
     }, actions))
 
   if (goal == 'params')
-    return {alpha: alpha, alpha_prod: alpha_prod, certain_zero: certain_zero, certain_it: certain_it, certian_surp: certain_surp, certain_surp_it: certain_surp_it, certain_clean: certain_clean, certain_clean_it: certain_clean_it, certain_low: certain_low, certain_low_it: certain_low_it, certain_high: certain_high, certain_high_it: certain_high_it, agent_bias: agent_bias, np_cost: np_cost, pro_cost: pro_cost, prior: prior, jump_over_prior: jump_over_prior, wave_prior: wave_prior, attack_prior: attack_prior, throw_rock_prior: throw_rock_prior, overall_prior: overall_prior, train_prior: train_prior}
+    return {alpha: alpha, alpha_prod: alpha_prod, certain_zero: certain_zero, certain_it: certain_it, certain_surp: certain_surp, certain_surp_it: certain_surp_it, certain_clean: certain_clean, certain_clean_it: certain_clean_it, certain_low: certain_low, certain_low_it: certain_low_it, certain_high: certain_high, certain_high_it: certain_high_it, agent_bias: agent_bias, np_cost: np_cost, pro_cost: pro_cost, prior: prior, jump_over_prior: jump_over_prior, wave_prior: wave_prior, attack_prior: attack_prior, throw_rock_prior: throw_rock_prior, overall_prior: overall_prior, train_prior: train_prior}
   else // if (goal == 'samples')
     return {PP_speaker: PP_speaker, PP_speaker2: PP_speaker2, PP_listener: PP_listener, PP_listener2: PP_listener2, PP_listener3: PP_listener3}
 }
@@ -1051,10 +1069,10 @@ var actions = ['jump_over', 'wave', 'attack', 'throw_rock']
 //var actions = ['overall']
 
 // 1. Returns mean values of the model parameters estimated based on the experimental data
-estimateParams(actions, 'direct', 'none', 'none', 20000)
+//estimateParams(actions, 'direct', 'literal', 'none', 20000)
 
 // 2. Gets samples to test the porsterior predictions of the model (copy the output to sample.json file and process it in R) 
-//getSamples(actions, 'none', 'direct', 'none', 5000)
+getSamples(actions, 'direct', 'literal', 'none', 5000)
 
 // 3. Compares different RSA models: direct, inverse and two mixed ones. Bigger number is better
 //compareModels(actions, 'none', 10000)

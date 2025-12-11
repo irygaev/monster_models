@@ -34,6 +34,13 @@ for (i in 1:length(json)) {
                 utterance_list = append(utterance_list, utterance)
                 count_list = append(count_list, strtoi(sample[[j]][[k]][[l]]))
             }
+
+            s = sum(tail(count_list, length(utterances)))
+            offset = length(count_list) - length(utterances)
+            
+            for (l in 1:length(utterances))  {
+                count_list[offset + l] <- count_list[offset + l] * 100 / s
+            }
         }
     }
 }
@@ -65,6 +72,13 @@ for (i in 1:length(json)) {
                 utterance_list = append(utterance_list, utterance)
                 count_list = append(count_list, strtoi(sample[[j]][[k]][[l]]))
             }
+            
+            s = sum(tail(count_list, length(utterances)))
+            offset = length(count_list) - length(utterances)
+            
+            for (l in 1:length(utterances))  {
+                count_list[offset + l] <- count_list[offset + l] * 100 / s
+            }
         }
     }
 }
@@ -89,13 +103,18 @@ speaker_gold <- speaker_gold %>%
     mutate(utterance = factor(utterance, levels=utterances)) %>%
     filter(action %in% actions)
 
+speaker_gold <- speaker_gold %>%
+    group_by(action, state, utterance) %>%
+    summarize(count = sum(count)) %>%
+    mutate(percent = count * 100 / sum(count))
+
 speaker_data %>%
     ggplot(aes(x=count)) +
     #geom_histogram() +
     geom_density() +
-    geom_point(data = speaker_gold, aes(x = count, y = 0, color = "red")) +
+    geom_point(data = speaker_gold, aes(x = percent, y = 0, color = "red")) +
     facet_grid(action ~ state + utterance) +
-    ylim(0, 0.3)
+    ylim(0, 0.2)
 
 speaker_gold %>%
     group_by(action, state, utterance) %>%
@@ -116,7 +135,7 @@ speaker_data %>%
     ggplot(aes(x=count)) +
     #geom_histogram() +
     geom_density() +
-    geom_point(data = speaker_gold, aes(x = count, y = 0, color = "red")) +
+    geom_point(data = speaker_gold, aes(x = percent, y = 0, color = "red")) +
     facet_grid(action ~ factor(state, labels=c("agent falls", "patient falls")) + factor(utterance, levels=c("zero", "pro", "np"))) +
     guides(color="none") +
     labs(x = "Counts", y="Probability density") +
@@ -244,7 +263,7 @@ rows = list(action = action_list, utterance = utterance_list, state = state_list
 listener_data3 = rbind(listener_data3, rows)
 
 
-listener_data = listener_data3
+listener_data = listener_data2
 
 listener_data$count = as.numeric(listener_data$count)
 
@@ -253,7 +272,7 @@ listener_data <- listener_data %>%
     mutate(utterance = factor(utterance, levels=utterances)) %>%
     mutate(state = factor(state, levels=states))
 
-listener_gold = read.csv("perc_data_high_noise.csv")
+listener_gold = read.csv("perc_data_low_noise.csv")
 
 listener_gold <- listener_gold %>%
     mutate(action = factor(action, levels=actions)) %>%
@@ -271,9 +290,9 @@ listener_data %>%
     #geom_histogram() +
     geom_density() +
     geom_point(data = listener_gold, aes(x = percent, y = 0, color = "red")) +
-    facet_grid(action ~ utterance + state) #+
+    facet_grid(action ~ utterance + state) +
     #xlim(0, 100) +
-    #ylim(0, 0.2)
+    ylim(0, 0.2)
 
 listener_gold %>%
     group_by(action, utterance, state) %>%
