@@ -1,0 +1,109 @@
+// Function to create discrete beta distribution
+var roundTo3 = function(x){
+  return Math.round(x * 1000) / 1000
+}
+
+var granularity = 100
+var midBins = map(function(x) {roundTo3(x/granularity + 1/(2*granularity))}, 
+                  _.range(0,granularity))
+
+var DiscreteBeta = cache(function(a, b){
+  Infer({model: function(){
+    categorical({
+      vs:midBins,
+      ps:map(function(x){
+        Math.exp(Beta({a, b}).score(x))
+      }, midBins)
+    })
+  }})
+})
+
+// Is this a world in which the conventionally habitual activity is
+// habitual (presumed cashier-payer) or non-habitual (presumed non-payer)?
+// (mostly for demonstration)
+var world = ["wonky","ordinary"]
+
+// Assume uniform likelihood
+var worldPrior = function() {
+  categorical([0.5, 0.5], world)
+}
+
+// Habituality priors
+// beta distributions fit to empirical priors
+var habitualityPrior = function(world) {
+  world === "ordinary" ? sample(DiscreteBeta(beta_high_a, beta_high_b)) :
+  world === "wonky" ? sample(DiscreteBeta(beta_low_a, beta_low_b)) :
+  true
+}
+
+// Current activity state
+// the activity being described at this point in time either took place, or didn't
+var state = ["happened","didn't happen"]
+
+// State priors
+// whether the activity took place is dependent on prior likelihood
+var statePrior = function(habituality) {
+  flip(habituality) ? state[0] : state[1]
+}
+
+// Utterances
+// choice of 4 utterances; prosody not modeled separately as affects only one variant
+var utterance = ['oh yeah','exclamation','plain','(...)']
+
+// Utterance cost
+// (rough estimate of number of constituents + extra for articulatory effort)
+var cost = {
+  "oh yeah": 4.5,
+  "exclamation": 4,
+  "plain": 3,
+  "(...)": 0
+}
+
+// Meaning
+// literal meaning of all overt utterances is that activity happened.
+// literal meaning of null "utterance" is consistent with all activity states
+var meaning = function(utt,state) {
+  utt === "oh yeah" ? state === "happened" : 
+  utt === "exclamation" ? state === "happened" : 
+  utt === "plain" ? state === "happened" : 
+  utt === "(...)" ? true :
+  true
+}
+
+// Utterance prior
+// utterance prior determined by utterance cost, as defined above
+var utterancePrior = function(lambda) {
+  var uttProbs = map(function(u) {return Math.exp(-lambda * cost[u])}, utterance)
+  return categorical(uttProbs, utterance)
+}
+
+// Literal listener
+var literalListener = mem(function(utterance, habituality) {
+  return Infer({method: 'enumerate', model: function() {
+    var state = statePrior(habituality)
+    condition(meaning(utterance,state))
+    return state
+  }})
+})
+
+// Speaker
+var speaker = mem(function(state, habituality, alpha, lambda) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(lambda)
+    factor(alpha * literalListener(utterance, habituality).score(state))
+    return utterance
+  }})
+})
+
+// Pragmatic listener
+// assume high-habit world for demonstration
+var pragmaticListener = function(alpha, lambda) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = "(...)"
+    var world = "ordinary"
+    var habituality = habitualityPrior(world)
+    var state = statePrior(habituality)
+    observe(speaker(state, habituality, alpha, lambda), utterance)
+    habituality
+  }})
+}

@@ -1,0 +1,111 @@
+var referent = ["Subject", "Object"]
+
+var referentPrior = function(verb) {
+  verb == "S-Bias" ? categorical([0.75, 0.25], referent) :
+  verb == "O-Bias" ? categorical([0.25, 0.75], referent) :
+  true
+}
+
+var alpha = 1
+
+var lambda = 1
+
+var utterance = ["Pronoun: Subject", "Pronoun: Object", "Name: Subject", "Name: Object"]
+
+var cost = {
+  "Pronoun: Subject": 1,
+  "Pronoun: Object": 1,
+  "Name: Subject": 2,
+  "Name: Object": 2
+}
+
+var utterancePrior = function(referent) {
+  var uttProbs = map(function(u) {return Math.exp(-lambda * cost[u])}, utterance)
+  var subjBias = map2(function(x, y) {return x * y}, [0.8, 0.8, 0.2, 0.2],uttProbs)
+  var objBias = map2(function(x, y) {return x * y}, [0.2, 0.2, 0.8, 0.8],uttProbs)
+  referent == "Subject" ? (categorical(subjBias, utterance)) :
+  referent == "Object" ? (categorical(objBias, utterance)) : 
+  true
+}
+
+// Confusion matrix
+var pronounS = [0.98,0.0001,0.02,0.0001]
+var nameS = [0.0001,0.999,0.0001,0.0001]
+var pronounO = [0.02,0.0001,0.98,0.0001]
+var nameO = [0.0001,0.0001,0.0001,0.999]
+
+// Perceived utterance
+var utterance_p = function(u_i) {
+  u_i === "Pronoun: Subject" ? categorical(pronounS, utterance) :
+  u_i === "Name: Subject" ? categorical(nameS, utterance) :
+  u_i === "Pronoun: Object" ? categorical(pronounO, utterance) :
+  u_i === "Name: Object" ? categorical(nameO, utterance) :
+  true
+}
+
+// Confusion matrix for purpose of summing up probabilities
+var utterance_p_prob = function(u_i, u_p) {
+  u_i === "Pronoun: Subject" ? pronounS[_.indexOf(utterance, u_p)] :
+  u_i === "Name: Subject" ? nameS[_.indexOf(utterance, u_p)] :
+  u_i === "Pronoun: Object" ? pronounO[_.indexOf(utterance, u_p)] :
+  u_i === "Name: Object" ? nameO[_.indexOf(utterance, u_p)] :
+  true
+}
+
+// Utterance posterior P(u_p | u_i)
+var utterancePosterior = mem(function(u_p, referent) {
+  Infer({method: 'enumerate', model: function() {
+    var u_i = utterancePrior(referent)
+    condition(u_p === utterance_p(u_i))
+    return u_i
+  }})
+})
+
+var meaning = function(utterance, referent) {
+  (utterance == "Name: Subject" || utterance == "Pronoun: Subject") ? referent == "Subject" :
+  (utterance == "Name: Object" || utterance == "Pronoun: Object") ? referent == "Object" :
+  true
+}
+
+var literalListener = function(u_p, verb) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior(verb)
+    var u_i = sample(utterancePosterior(u_p, referent))
+    condition(meaning(u_i, referent))
+    return referent
+  }})
+}
+
+// Expected utilities
+var get_EUs = function(u_i, referent, verb){
+  var EUs = sum(map(function(u_p) {
+    utterance_p_prob(u_i, u_p) *
+      literalListener(u_p, verb).score(referent)
+    }, utterance))
+  return EUs
+}
+
+var speaker = function(referent, verb) {
+  return Infer({method: 'enumerate', model: function() {
+    var u_i = utterancePrior(referent)
+    var EUs = get_EUs(u_i, referent, verb)
+    factor(alpha * EUs)
+    return u_i
+  }})
+}
+
+var pragmaticListener = function(u_p, verb) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior(verb)
+    var u_i = sample(utterancePosterior(u_p, referent))
+    observe(speaker(referent, verb), u_i)
+    return referent
+  }})
+}
+
+
+print(speaker("Subject","S-Bias")) 
+print(speaker("Object","S-Bias")) 
+print(speaker("Subject","O-Bias")) 
+print(speaker("Object","O-Bias")) 
+

@@ -1,0 +1,610 @@
+// possible referents: subject, object
+var referent = ["Subject", "Object"]
+
+// if subject bias, subject more likely to be referred to; same for object
+var referentPrior = function() {
+  categorical([0.6, 0.4], referent)
+}
+
+// utility optimization parameter
+var alpha = 1.5
+
+// cost optimization parameter
+var lambda = 1.5
+
+// possible utterances: ambiguous pronoun, names referring to subject or object
+var utterance = ["Pronoun", "Name: Subject", "Name: Object"]
+
+var cost = {
+  "Pronoun": 1,
+  "Name: Subject": 2,
+  "Name: Object": 2
+}
+
+// utterance prior based on cost
+var utterancePrior = function() {
+  var uttProbs = map(function(u) {return Math.exp(-lambda * cost[u])}, utterance)
+  return categorical(uttProbs, utterance)
+}
+
+// nameS/O can only be used to refer to subject/object; pronoun can refer to both
+var meaning = function(utterance, referent) {
+  utterance == "Name: Subject" ? referent == "Subject" :
+  utterance == "Name: Object" ? referent == "Object" :
+  utterance == "Pronoun" ? true :
+  true
+}
+
+// P_L0(referent|utterance) \propto 
+// [[utterance]](referent) * P(referent|verb) * P(verb)
+var literalListener = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    condition(meaning(utterance, referent))
+    return referent
+  }})
+})
+
+// P_S1(utterance|referent; alpha, lambda, C) \propto
+// P(utterance; C, lambda) * exp(alpha * logL0(referent∣utterance))
+var speaker_1 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * literalListener(utterance).score(referent))
+    return utterance
+  }})
+})
+
+// P_L1(referent|utterance) \propto 
+// P_S1(utterance|referent, verb; alpha, lambda, C) * P(referent|verb)
+var pragmaticListener_1 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_1(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_2 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_1(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_2 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_2(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_3 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_2(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_3 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_3(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_4 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_3(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_4 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_4(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_5 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_4(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_5 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_5(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_6 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_5(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_6 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_6(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_7 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_6(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_7 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_7(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_8 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_7(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_8 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_8(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_9 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_8(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_9 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_9(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_10 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_9(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_10 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_10(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_11 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_10(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_11 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_11(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_12 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_11(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_12 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_12(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_13 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_12(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_13 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_13(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_14 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_13(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_14 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_14(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_15 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_14(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_15 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_15(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_16 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_15(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_16 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_16(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_17 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_16(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_17 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_17(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_18 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_17(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_18 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_18(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_19 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_18(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_19 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_19(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_20 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_19(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_20 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_20(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_21 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_20(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_21 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_21(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_22 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_21(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_22 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_22(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_23 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_22(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_23 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_23(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_24 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_23(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_24 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_24(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_25 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_24(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_25 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_25(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_26 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_25(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_26 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_26(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_27 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_26(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_27 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_27(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_28 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_27(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_28 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_28(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_29 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_28(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_29 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_29(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_30 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_29(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_30 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_30(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_31 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_30(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_31 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_31(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_32 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_31(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_32 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_32(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_33 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_32(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_33 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_33(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_34 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_33(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_34 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_34(referent), utterance)
+    return referent
+  }})
+})
+
+var speaker_35 = mem(function(referent) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * pragmaticListener_34(utterance).score(referent))
+    return utterance
+  }})
+})
+
+var pragmaticListener_35 = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior()
+    observe(speaker_35(referent), utterance)
+    return referent
+  }})
+})

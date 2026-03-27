@@ -1,0 +1,77 @@
+// Current activity state
+// the activity being described at this point in time either took 
+// place, or didn't
+var state = ["happened","didn't happen"]
+
+// State priors
+// assume highly predictable/habitual activity
+// with a 90% chance of occurring, for purpose of demonstration
+var statePrior = function() {
+  categorical([0.9, 0.1], state) 
+}
+
+// Utterances
+// choice of 4 utterances; prosody not modeled separately as affects 
+// only one variant
+var utterance = ['oh yeah','exclamation','plain','(...)']
+
+// Utterance cost
+// (rough estimate of number of constituents + extra for
+// articulatory effort)
+var cost = {
+  "oh yeah": 4.5,
+  "exclamation": 4,
+  "plain": 3,
+  "(...)": 0
+}
+
+// Meaning
+// literal meaning of all overt utterances is that activity happened.
+// literal meaning of null "utterance" is consistent with all activity states
+var meaning = function(utt,state) {
+  utt === "oh yeah" ? state === "happened" : 
+  utt === "exclamation" ? state === "happened" : 
+  utt === "plain" ? state === "happened" : 
+  utt === "(...)" ? true :
+  true
+}
+
+// Speaker optimality (maximizing utility)
+var alpha = 4
+
+// Speaker optimality (minimizing cost)
+var lambda = 1
+
+// Utterance prior
+// utterance prior determined by utterance cost, as defined above
+var utterancePrior = function() {
+  var uttProbs = map(function(u) {return Math.exp(-lambda * cost[u])}, utterance)
+  return categorical(uttProbs, utterance)
+}
+
+// Literal listener
+var literalListener = mem(function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var state = statePrior()
+    condition(meaning(utterance,state))
+    return state
+  }})
+})
+
+// Speaker
+var speaker = mem(function(state) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior()
+    factor(alpha * literalListener(utterance).score(state))
+    return utterance
+  }})
+})
+
+// Pragmatic listener
+var pragmaticListener = function(utterance) {
+  return Infer({method: 'enumerate', model: function() {
+    var state = statePrior()
+    observe(speaker(state),utterance)
+    return state
+  }})
+}

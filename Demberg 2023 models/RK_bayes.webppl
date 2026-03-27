@@ -1,0 +1,18 @@
+var speakerUtterancePrior = function(referent) {
+  referent == "Subject" ? (flip(0.8) ? "Pronoun" : "Noun") :
+  referent == "Object" ? (flip(0.2) ? "Pronoun" : "Noun") : 
+  true
+}
+
+var speaker = function(referent) {
+	return Infer({method: 'enumerate', model:function() {
+		var utterance = speakerUtterancePrior(referent)
+		return utterance
+	}})}
+
+var listener = function(utterance, subjectPrior) {
+	return Infer({method: 'enumerate', model:function() {
+		var referent = flip(subjectPrior) ? "Subject" : "Object"
+		observe(speaker(referent), utterance)
+		return referent
+	}})}

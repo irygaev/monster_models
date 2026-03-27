@@ -1,0 +1,65 @@
+var referent = ["Subject", "Object"]
+
+var referentPrior = function(verb) {
+  verb == "S-Bias" ? categorical([0.75, 0.25], referent) :
+  verb == "O-Bias" ? categorical([0.25, 0.75], referent) :
+  true
+}
+
+var alpha = 1
+
+var lambda = 1
+
+var utterance = ["Pronoun", "Name: Subject", "Name: Object"]
+
+var cost = {
+  "Pronoun": 1,
+  "Name: Subject": 2,
+  "Name: Object": 2
+}
+
+var utterancePrior = function(referent) {
+  var uttProbs = map(function(u) {return Math.exp(-lambda * cost[u])}, utterance)
+  var subjBias = map2(function(x, y) {return x * y}, [0.8, 0.2, 0.2],uttProbs)
+  var objBias = map2(function(x, y) {return x * y}, [0.2, 0.8, 0.8],uttProbs)
+  referent == "Subject" ? (categorical(subjBias, utterance)) :
+  referent == "Object" ? (categorical(objBias, utterance)) : 
+  true
+}
+
+var meaning = function(utterance, referent) {
+  utterance == "Name: Subject" ? referent == "Subject" :
+  utterance == "Name: Object" ? referent == "Object" :
+  utterance == "Pronoun" ? true :
+  true
+}
+
+var literalListener = function(utterance, verb) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior(verb)
+    condition(meaning(utterance, referent))
+    return referent
+  }})
+}
+
+var speaker = function(referent, verb) {
+  return Infer({method: 'enumerate', model: function() {
+    var utterance = utterancePrior(referent)
+    factor(alpha * literalListener(utterance, verb).score(referent))
+    return utterance
+  }})
+}
+
+var pragmaticListener = function(utterance, verb) {
+  return Infer({method: 'enumerate', model: function() {
+    var referent = referentPrior(verb)
+    observe(speaker(referent, verb), utterance)
+    return referent
+  }})
+}
+
+
+print(speaker("Subject","S-Bias")) 
+print(speaker("Object","S-Bias")) 
+print(speaker("Subject","O-Bias")) 
+print(speaker("Object","O-Bias")) 
