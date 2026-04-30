@@ -1,0 +1,20 @@
+// Function to create discrete beta distribution
+var roundTo3 = function(x){
+  return Math.round(x * 1000) / 1000
+}
+
+var granularity = 100
+var midBins = map(function(x) {roundTo3(x/granularity + 1/(2*granularity))}, 
+                  _.range(0,granularity))
+
+var DiscreteBeta = cache(function(a, b){
+  Infer({model: function(){
+    categorical({
+      vs:midBins,
+      ps:map(function(x){
+        Math.exp(Beta({a, b}).score(x))
+      }, midBins)
+    })
+  }})
+})
+

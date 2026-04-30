@@ -28,6 +28,11 @@ var worldPrior = function() {
   categorical([0.5, 0.5], world)
 }
 
+var beta_high_a = 5
+var beta_high_b = 2
+var beta_low_a = 2
+var beta_low_b = 5
+
 // Habituality priors
 // beta distributions fit to empirical priors
 var habitualityPrior = function(world) {
@@ -103,16 +108,21 @@ var speaker = mem(function(state, habituality) {
 
 // Pragmatic listener
 // assume high-habit world for demonstration
-var pragmaticListener = function(utterance, info) {
+var pragmaticListener = function(utterance, world, info) {
   return Infer({method: 'enumerate', model: function() {
-    var world = "ordinary"
+    //var world = "wonky"
     var habituality = habitualityPrior(world)
     var state = statePrior(habituality)
     observe(speaker(state, habituality),utterance)
-    info === "both" ? {state: state, habituality: habituality} :
+    return info === "both" ? {state: state, habituality: habituality} :
     info === "state" ? state :
     info === "habituality" ? habituality :
     true
+    //return state
   }})
 }
 
+display(habitualityPrior("ordinary"))
+display(habitualityPrior("wonky"))
+
+display(pragmaticListener("(...)", "ordinary", "state"))

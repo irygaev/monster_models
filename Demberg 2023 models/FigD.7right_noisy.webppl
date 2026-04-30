@@ -10,7 +10,7 @@ var alpha = 1
 
 var lambda = 1
 
-var utterance = ["Pronoun: Subject", "Pronoun: Object", "Name: Subject", "Name: Object"]
+var utterance = ["Pronoun: Subject", "Name: Subject", "Pronoun: Object", "Name: Object"]
 
 var cost = {
   "Pronoun: Subject": 1,
@@ -21,17 +21,17 @@ var cost = {
 
 var utterancePrior = function(referent) {
   var uttProbs = map(function(u) {return Math.exp(-lambda * cost[u])}, utterance)
-  var subjBias = map2(function(x, y) {return x * y}, [0.8, 0.8, 0.2, 0.2],uttProbs)
-  var objBias = map2(function(x, y) {return x * y}, [0.2, 0.2, 0.8, 0.8],uttProbs)
+  var subjBias = map2(function(x, y) {return x * y}, [0.8, 0.2, 0.8, 0.2],uttProbs)
+  var objBias = map2(function(x, y) {return x * y}, [0.2, 0.8, 0.2, 0.8],uttProbs)
   referent == "Subject" ? (categorical(subjBias, utterance)) :
   referent == "Object" ? (categorical(objBias, utterance)) : 
   true
 }
 
 // Confusion matrix
-var pronounS = [0.98,0.0001,0.02,0.0001]
+var pronounS = [0.6,0.0001,0.4,0.0001]
 var nameS = [0.0001,0.999,0.0001,0.0001]
-var pronounO = [0.02,0.0001,0.98,0.0001]
+var pronounO = [0.2,0.0001,0.8,0.0001]
 var nameO = [0.0001,0.0001,0.0001,0.999]
 
 // Perceived utterance
@@ -80,7 +80,7 @@ var literalListener = function(u_p, verb) {
 var get_EUs = function(u_i, referent, verb){
   var EUs = sum(map(function(u_p) {
     utterance_p_prob(u_i, u_p) *
-      literalListener(u_p, verb).score(referent)
+      literalListener(u_p, verb).score(referent) // mistake: this is not a probability
     }, utterance))
   return EUs
 }
@@ -104,8 +104,13 @@ var pragmaticListener = function(u_p, verb) {
 }
 
 
-print(speaker("Subject","S-Bias")) 
-print(speaker("Object","S-Bias")) 
-print(speaker("Subject","O-Bias")) 
-print(speaker("Object","O-Bias")) 
+//print(speaker("Subject","S-Bias")) 
+//print(speaker("Object","S-Bias")) 
+//print(speaker("Subject","O-Bias")) 
+//print(speaker("Object","O-Bias")) 
 
+//sort(repeat(100, function() {return utterancePrior("Object")}))
+//print(utterance_p_prob("Pronoun: Subject", "Pronoun: Object"))
+
+display(utterancePosterior("Pronoun: Subject", "Subject"))
+display(utterancePosterior("Pronoun: Object", "Object"))

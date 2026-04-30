@@ -57,3 +57,21 @@ var pragmaticListener = function(utterance, verb) {
     return referent
   }})
 }
+
+var uttProbs = map(function(u) {return Math.exp(-lambda * cost[u])}, utterance)
+var subjBias = map2(function(x, y) {return x * y}, [0.8, 0.2, 0.2],uttProbs)
+var objBias = map2(function(x, y) {return x * y}, [0.2, 0.8, 0.8],uttProbs)
+
+display(uttProbs)
+display(subjBias)
+display(objBias)
+
+display(literalListener("Pronoun", "S-Bias"))
+display(speaker("Subject", "S-Bias"))
+display(speaker("Object", "S-Bias"))
+display(pragmaticListener("Pronoun", "S-Bias"))
+print("---------------------------------")
+display(literalListener("Pronoun", "O-Bias"))
+display(speaker("Subject", "O-Bias"))
+display(speaker("Object", "O-Bias"))
+display(pragmaticListener("Pronoun", "O-Bias"))

@@ -2,352 +2,24 @@
 // OBSERVED DATA
 ////////////////
 
-var prod_data_no_training = {
-  jump_over: {
-    agent_falls: {the_agent: 27, it: 17, zero: 58, },
-    patient_falls: {the_patient: 77, it: 2, zero: 4, },
-  },
-  wave: {
-    agent_falls: {the_agent: 44, it: 26, zero: 37, },
-    patient_falls: {the_patient: 105, it: 3, zero: 0, },
-  },
-  attack: {
-    agent_falls: {the_agent: 37, it: 16, zero: 56, },
-    patient_falls: {the_patient: 62, it: 9, zero: 1, },
-  },
-  throw_rock: {
-    agent_falls: {the_agent: 87, it: 12, zero: 10, },
-    patient_falls: {the_patient: 78, it: 5, zero: 1, },
-  },
-  overall: {
-    agent_falls: {the_agent: 195, it: 71, zero: 161, },
-    patient_falls: {the_patient: 322, it: 19, zero: 6, }
-  }
-}
+var prod_data_no_training = json.read('prod_data_no_training.json')
+var prod_data_no_training_first = json.read('prod_data_no_training_first.json')
+var prod_data_no_training_rest = json.read('prod_data_no_training_rest.json')
+var prod_data_training = json.read('prod_data_training.json')
+var prod_data_training_familiar = json.read('prod_data_training_familiar.json')
+var prod_data_training_surprising = json.read('prod_data_training_surprising.json')
+var prod_data_training_postsurprising = json.read('prod_data_training_postsurprising.json')
 
-var prod_data_no_training_first = {
-  jump_over: {
-    agent_falls: {the_agent: 3, it: 4, zero: 11, },
-    patient_falls: {the_patient: 9, it: 0, zero: 0, },
-  },
-  wave: {
-    agent_falls: {the_agent: 0, it: 6, zero: 9, },
-    patient_falls: {the_patient: 18, it: 1, zero: 0, },
-  },
-  attack: {
-    agent_falls: {the_agent: 3, it: 4, zero: 15, },
-    patient_falls: {the_patient: 4, it: 1, zero: 0, },
-  },
-  throw_rock: {
-    agent_falls: {the_agent: 9, it: 3, zero: 3, },
-    patient_falls: {the_patient: 6, it: 0, zero: 0, },
-  },
-  overall: {
-    agent_falls: {the_agent: 15, it: 17, zero: 38, },
-    patient_falls: {the_patient: 37, it: 2, zero: 0, }
-  }
-}
+var perc_data_clean = json.read('perc_data_clean.json')
+var perc_data_clean_heard = json.read('perc_data_clean_heard.json')
+var perc_data_high_noise = json.read('perc_data_high_noise.json')
+var perc_data_high_noise_heard = json.read('perc_data_high_noise_heard.json')
+var perc_data_low_noise = json.read('perc_data_low_noise.json')
+var perc_data_low_noise_heard = json.read('perc_data_low_noise_heard.json')
+var perc_data_noise = json.read('perc_data_noise.json')
+var perc_data_noise_heard = json.read('perc_data_noise_heard.json')
 
-var prod_data_no_training_rest = {
-  jump_over: {
-    agent_falls: {the_agent: 24, it: 13, zero: 47, },
-    patient_falls: {the_patient: 68, it: 2, zero: 4, },
-  },
-  wave: {
-    agent_falls: {the_agent: 44, it: 20, zero: 28, },
-    patient_falls: {the_patient: 87, it: 2, zero: 0, },
-  },
-  attack: {
-    agent_falls: {the_agent: 34, it: 12, zero: 41, },
-    patient_falls: {the_patient: 58, it: 8, zero: 1, },
-  },
-  throw_rock: {
-    agent_falls: {the_agent: 78, it: 9, zero: 7, },
-    patient_falls: {the_patient: 72, it: 5, zero: 1, },
-  },
-  overall: {
-    agent_falls: {the_agent: 180, it: 54, zero: 123, },
-    patient_falls: {the_patient: 285, it: 17, zero: 6, }
-  }
-}
-
-var prod_data_training = {
-  jump_over: {
-    agent_falls: {the_agent: 51, it: 12, zero: 36, },
-    patient_falls: {the_patient: 92, it: 0, zero: 1, },
-  },
-  wave: {
-    agent_falls: {the_agent: 52, it: 17, zero: 31, },
-    patient_falls: {the_patient: 90, it: 2, zero: 3, },
-  },
-  attack: {
-    agent_falls: {the_agent: 41, it: 7, zero: 17, },
-    patient_falls: {the_patient: 46, it: 4, zero: 1, },
-  },
-  throw_rock: {
-    agent_falls: {the_agent: 87, it: 8, zero: 10, },
-    patient_falls: {the_patient: 86, it: 5, zero: 0, },
-  },
-  overall: {
-    agent_falls: {the_agent: 231, it: 44, zero: 94, },
-    patient_falls: {the_patient: 314, it: 11, zero: 5, }
-  }
-}
-
-var prod_data_training_familiar = {
-  jump_over: {
-    agent_falls: {the_agent: 10, it: 4, zero: 17, },
-    patient_falls: {the_patient: 28, it: 0, zero: 0, },
-  },
-  wave: {
-    agent_falls: {the_agent: 11, it: 6, zero: 13, },
-    patient_falls: {the_patient: 27, it: 1, zero: 1, },
-  },
-  attack: {
-    agent_falls: {the_agent: 9, it: 3, zero: 7, },
-    patient_falls: {the_patient: 11, it: 4, zero: 0, },
-  },
-  throw_rock: {
-    agent_falls: {the_agent: 24, it: 2, zero: 7, },
-    patient_falls: {the_patient: 25, it: 2, zero: 0, },
-  },
-  overall: {
-    agent_falls: {the_agent: 54, it: 15, zero: 44, },
-    patient_falls: {the_patient: 91, it: 7, zero: 1, }
-  }
-}
-
-var prod_data_training_surprising = {
-  jump_over: {
-    agent_falls: {the_agent: 21, it: 4, zero: 7, },
-    patient_falls: {the_patient: 30, it: 0, zero: 0, },
-  },
-  wave: {
-    agent_falls: {the_agent: 21, it: 6, zero: 8, },
-    patient_falls: {the_patient: 31, it: 0, zero: 2, },
-  },
-  attack: {
-    agent_falls: {the_agent: 15, it: 3, zero: 5, },
-    patient_falls: {the_patient: 16, it: 0, zero: 0, },
-  },
-  throw_rock: {
-    agent_falls: {the_agent: 33, it: 3, zero: 1, },
-    patient_falls: {the_patient: 30, it: 2, zero: 0, },
-  },
-  overall: {
-    agent_falls: {the_agent: 90, it: 16, zero: 21, },
-    patient_falls: {the_patient: 107, it: 2, zero: 2, }
-  }
-}
-
-var prod_data_training_postsurprising = {
-  jump_over: {
-    agent_falls: {the_agent: 20, it: 4, zero: 12, },
-    patient_falls: {the_patient: 34, it: 0, zero: 1, },
-  },
-  wave: {
-    agent_falls: {the_agent: 20, it: 5, zero: 10, },
-    patient_falls: {the_patient: 32, it: 1, zero: 0, },
-  },
-  attack: {
-    agent_falls: {the_agent: 17, it: 1, zero: 5, },
-    patient_falls: {the_patient: 19, it: 0, zero: 1, },
-  },
-  throw_rock: {
-    agent_falls: {the_agent: 30, it: 3, zero: 2, },
-    patient_falls: {the_patient: 31, it: 1, zero: 0, },
-  },
-  overall: {
-    agent_falls: {the_agent: 87, it: 13, zero: 29, },
-    patient_falls: {the_patient: 116, it: 2, zero: 2, }
-  }
-}
-
-var perc_data_clean = {
-  jump_over: {
-    it: {agent_falls: 22, patient_falls: 20, },
-    zero: {agent_falls: 50, patient_falls: 0, },
-  },
-  wave: {
-    it: {agent_falls: 16, patient_falls: 22, },
-    zero: {agent_falls: 47, patient_falls: 7, },
-  },
-  attack: {
-    it: {agent_falls: 17, patient_falls: 33, },
-    zero: {agent_falls: 41, patient_falls: 1, },
-  },
-  throw_rock: {
-    it: {agent_falls: 10, patient_falls: 34, },
-    zero: {agent_falls: 38, patient_falls: 8, },
-  },
-  overall: {
-    it: {agent_falls: 65, patient_falls: 109, },
-    zero: {agent_falls: 176, patient_falls: 16, }
-  }
-}
-
-var perc_data_noise = {
-  jump_over: {
-    it: {agent_falls: 60, patient_falls: 10, },
-    zero: {agent_falls: 97, patient_falls: 4, },
-  },
-  wave: {
-    it: {agent_falls: 49, patient_falls: 22, },
-    zero: {agent_falls: 75, patient_falls: 8, },
-  },
-  attack: {
-    it: {agent_falls: 56, patient_falls: 33, },
-    zero: {agent_falls: 74, patient_falls: 10, },
-  },
-  throw_rock: {
-    it: {agent_falls: 34, patient_falls: 35, },
-    zero: {agent_falls: 78, patient_falls: 17, },
-  },
-  overall: {
-    it: {agent_falls: 199, patient_falls: 100, },
-    zero: {agent_falls: 324, patient_falls: 39, }
-  }
-}
-
-var perc_data_low_noise = {
-  jump_over: {
-    it: {agent_falls: 29, patient_falls: 6, },
-    zero: {agent_falls: 52, patient_falls: 0, },
-  },
-  wave: {
-    it: {agent_falls: 25, patient_falls: 10, },
-    zero: {agent_falls: 44, patient_falls: 4, },
-  },
-  attack: {
-    it: {agent_falls: 33, patient_falls: 21, },
-    zero: {agent_falls: 42, patient_falls: 6, },
-  },
-  throw_rock: {
-    it: {agent_falls: 16, patient_falls: 20, },
-    zero: {agent_falls: 46, patient_falls: 6, },
-  },
-  overall: {
-    it: {agent_falls: 103, patient_falls: 57, },
-    zero: {agent_falls: 184, patient_falls: 16, }
-  }
-}
-
-var perc_data_high_noise = {
-  jump_over: {
-    it: {agent_falls: 31, patient_falls: 4, },
-    zero: {agent_falls: 45, patient_falls: 4, },
-  },
-  wave: {
-    it: {agent_falls: 24, patient_falls: 12, },
-    zero: {agent_falls: 31, patient_falls: 4, },
-  },
-  attack: {
-    it: {agent_falls: 23, patient_falls: 12, },
-    zero: {agent_falls: 32, patient_falls: 4, },
-  },
-  throw_rock: {
-    it: {agent_falls: 18, patient_falls: 15, },
-    zero: {agent_falls: 32, patient_falls: 11, },
-  },
-  overall: {
-    it: {agent_falls: 96, patient_falls: 43, },
-    zero: {agent_falls: 140, patient_falls: 23, }
-  }
-}
-
-var perc_data_clean_heard = {
-  jump_over: {
-    it: {agent_falls: 15, patient_falls: 20, },
-    zero: {agent_falls: 57, patient_falls: 0, },
-  },
-  wave: {
-    it: {agent_falls: 9, patient_falls: 23, },
-    zero: {agent_falls: 54, patient_falls: 6, },
-  },
-  attack: {
-    it: {agent_falls: 12, patient_falls: 31, },
-    zero: {agent_falls: 46, patient_falls: 3, },
-  },
-  throw_rock: {
-    it: {agent_falls: 9, patient_falls: 34, },
-    zero: {agent_falls: 39, patient_falls: 8, },
-  },
-  overall: {
-    it: {agent_falls: 45, patient_falls: 108, },
-    zero: {agent_falls: 196, patient_falls: 17, }
-  }
-}
-
-var perc_data_noise_heard = {
-  jump_over: {
-    it: {agent_falls: 10, patient_falls: 8, },
-    zero: {agent_falls: 147, patient_falls: 6, },
-  },
-  wave: {
-    it: {agent_falls: 17, patient_falls: 19, },
-    zero: {agent_falls: 107, patient_falls: 11, },
-  },
-  attack: {
-    it: {agent_falls: 11, patient_falls: 30, },
-    zero: {agent_falls: 119, patient_falls: 13, },
-  },
-  throw_rock: {
-    it: {agent_falls: 6, patient_falls: 38, },
-    zero: {agent_falls: 106, patient_falls: 14, },
-  },
-  overall: {
-    it: {agent_falls: 44, patient_falls: 95, },
-    zero: {agent_falls: 479, patient_falls: 44, }
-  }
-}
-
-var perc_data_low_noise_heard = {
-  jump_over: {
-    it: {agent_falls: 7, patient_falls: 4, },
-    zero: {agent_falls: 74, patient_falls: 2, },
-  },
-  wave: {
-    it: {agent_falls: 7, patient_falls: 7, },
-    zero: {agent_falls: 62, patient_falls: 7, },
-  },
-  attack: {
-    it: {agent_falls: 6, patient_falls: 19, },
-    zero: {agent_falls: 69, patient_falls: 8, },
-  },
-  throw_rock: {
-    it: {agent_falls: 3, patient_falls: 22, },
-    zero: {agent_falls: 59, patient_falls: 4, },
-  },
-  overall: {
-    it: {agent_falls: 23, patient_falls: 52, },
-    zero: {agent_falls: 264, patient_falls: 21, }
-  }
-}
-
-var perc_data_high_noise_heard = {
-  jump_over: {
-    it: {agent_falls: 3, patient_falls: 4, },
-    zero: {agent_falls: 73, patient_falls: 4, },
-  },
-  wave: {
-    it: {agent_falls: 10, patient_falls: 12, },
-    zero: {agent_falls: 45, patient_falls: 4, },
-  },
-  attack: {
-    it: {agent_falls: 5, patient_falls: 11, },
-    zero: {agent_falls: 50, patient_falls: 5, },
-  },
-  throw_rock: {
-    it: {agent_falls: 3, patient_falls: 16, },
-    zero: {agent_falls: 47, patient_falls: 10, },
-  },
-  overall: {
-    it: {agent_falls: 21, patient_falls: 43, },
-    zero: {agent_falls: 215, patient_falls: 23, }
-  }
-}
-
-var priors = {
+var action_priors = {
   jump_over: 0.4391667,
   wave: 0.6422917,
   attack: 0.6800000,
@@ -365,109 +37,11 @@ var states = ["agent_falls", "patient_falls"]
 // set of utterances
 var utterances = ["the_agent", "the_patient", "it", "zero"]
 
-var meaning_table = {
-  agent_falls: {the_agent: 1, the_patient: 0, it: 1, zero: 1},
-  patient_falls: {the_agent: 0, the_patient: 1, it: 1, zero: 0}
-}
-
-var patientBiasPrior = function(action, prior)
+var confusionProb = function(i_utt, p_utt, params)
 {
-  if (prior == -1)
-    return priors[action]
-  else
-    return prior
-  //return (action == 'jump_over') ? beta({a:0.5451610, b:0.6961924}) : ((action == 'wave') ? beta({a:1.1358936, b:0.6326076}) : ((action == 'attack') ? beta({a:1.0033267, b:0.4721537}) : beta({a:2.970715, b:0.198752})))
-}
+    var certain_zero = params.certain_zero
+    var certain_it = params.certain_it
 
-var stateByPrior = function(action, patient_color, prior, train_prior, salience_prior) {
-  var p1 = patientBiasPrior(action, prior)
-  var p2 = 1 - salience_prior
-  var p3 = (patient_color == 'blue') ? (train_prior) : ((patient_color == 'red') ? (1 - train_prior) : (0.5))
-  
-  var p = p1 * p2 * p3 / (p1 * p2 * p3 + (1 - p1) * (1 - p2) * (1 - p3))
-  
-  var state_id = +flip(p)
-  return states[state_id]
-}
-
-// meaning function to interpret the utterances
-var meaning = function(utterance, state){
-  meaning_table[state][utterance]
-}
-
-
-// DIRECT RSA
-
-// literal listener
-var literalListener = function(action, patient_color, utterance, alpha, certain_zero, certain_it, agent_bias, prior, train_prior, np_cost, pro_cost){
-  Infer
-  (
-    {
-      model: function()
-      {
-        var state = stateByPrior(action, patient_color, prior, train_prior, agent_bias);
-        //var state = uniformDraw(states)
-
-        var certain_zero2 = certain_zero / (certain_zero + 1 - certain_it)
-        var certain_it2 = certain_it / (certain_it + 1 - certain_zero)
-
-        // Transforming zero to it or vice versa with parametrized probabilities
-        var ut = ((utterance == 'zero' && flip(1-certain_zero2)) ? ("it") : ((utterance == 'it' && flip(1-certain_it2)) ? ("zero") : (utterance)))
-        
-        // Introducing agent bias in interpreting pronoun
-        //var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
-        var ut2 = ut
-        
-        condition(meaning(ut2, state))
-        
-        //var f = (ut == 'it') ? ((state == 'the_agent') ? (agent_bias) : (1-agent_bias)) : meaning(ut, state);
-        //factor(Math.log(f));        
-
-        return state
-      }//,
-      //method: "rejection"
-    }
-  )
-}
-
-var literalListener_simple = function(action, patient_color, utterance, alpha, certain_zero, certain_it, agent_bias, prior, train_prior, np_cost, pro_cost){
-  Infer
-  (
-    {
-      model: function()
-      {
-        var state = stateByPrior(action, patient_color, prior, train_prior, 0.5);
-        //var state = uniformDraw(states)
-
-        var certain_zero2 = certain_zero / (certain_zero + 1 - certain_it)
-        var certain_it2 = certain_it / (certain_it + 1 - certain_zero)
-
-        // Transforming zero to it or vice versa with parametrized probabilities
-        var ut = ((utterance == 'zero' && flip(1 - certain_zero2)) ? ("it") : ((utterance == 'it' && flip(1 - certain_it2)) ? ("zero") : (utterance)))
-        
-        // Introducing agent bias in interpreting pronoun
-        var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
-        //var ut2 = ut
-        
-        condition(meaning(ut2, state))
-        
-        //var f = (ut == 'it') ? ((state == 'the_agent') ? (agent_bias) : (1-agent_bias)) : meaning(ut, state);
-        //factor(Math.log(f));        
-
-        return state
-      }//,
-      //method: "rejection"
-    }
-  )
-}
-
-// function for utterance costs
-var cost = function(utterance, np_cost, pro_cost) {
-  (utterance === "the_agent" || utterance === "the_patient") ? np_cost : ((utterance == "it") ? pro_cost : 0)
-}
-
-var p_confuse = function(i_utt, p_utt, certain_zero, certain_it)
-{
     if (i_utt == 'it')
     {
         if (p_utt == 'it')
@@ -492,616 +66,987 @@ var p_confuse = function(i_utt, p_utt, certain_zero, certain_it)
         return 0
 }
 
-// pragmatic speaker
-var speaker = function(action, patient_color, state, alpha, certain_zero, certain_it, agent_bias, prior, train_prior, np_cost, pro_cost)
+// function for utterance costs
+var cost = function(utterance, params) {
+  return (utterance === "the_agent" || utterance === "the_patient") ? params.np_cost : ((utterance == "it") ? params.pro_cost : 0)
+}
+
+var utterancePriors = function(state, params)
+{
+  var utt_probs = map(function(utterance) {return Math.exp(-params.alpha * cost(utterance, params))}, utterances)
+  
+  var subj_bias = map2(function(x, y) {return x * y}, [1 - params.subject_bias, 1 - params.subject_bias, params.subject_bias, params.subject_bias], utt_probs)
+  var obj_bias = map2(function(x, y) {return x * y}, [params.subject_bias, params.subject_bias, 1 - params.subject_bias, 1 - params.subject_bias], utt_probs)
+
+  return state == "agent_falls" ? (subj_bias) :
+         state == "patient_falls" ? (obj_bias) : 
+        [0.25, 0.25, 0.25, 0.25]
+}
+
+var utterancePrior = function(utterance, state, params)
+{
+  return utterancePriors(state, params)[utterances.indexOf(utterance)]
+}
+
+var utteranceByPrior = function(state, params)
+{
+    var utt_priors = utterancePriors(state, params)
+    return categorical(utt_priors, utterances)
+}
+
+var perceivedUtteranceSample = function(i_utt, params)
+{
+  var probs = map(function(p_utt) { return confusionProb(i_utt, p_utt, params) }, utterances)
+  return categorical(probs, utterances)
+}
+
+var reverseConfusionProbs = function(p_utt, state, params)
+{
+  var utt_weights = map(function(utterance) { return utterancePrior(utterance, state, params) * confusionProb(utterance, p_utt, params)}, utterances)
+  var utt_probs = map(function(x) { return x / sum(utt_weights)}, utt_weights)
+
+  return utt_probs
+}
+
+var reverseConfusionProb = function(p_utt, i_utt, state, params)
+{
+  var utt_probs = reverseConfusionProbs(p_utt, state, params)
+  return utt_probs[utterances.indexOf(i_utt)]
+}
+
+var intendedUtterancePosterior = function(p_utt, state, params)
+{
+  var utt_priors = reverseConfusionProbs(p_utt, state, params)
+  return Categorical({ps: utt_priors, vs: utterances})
+}
+
+var intendedUtterancePosteriorSlow = function(p_utt, state, params)
+{
+  Infer({method: 'enumerate', model: function() {
+    var i_utt = utteranceByPrior(state, params)
+    condition(p_utt === perceivedUtteranceSample(i_utt, params))
+    return i_utt
+  }})
+}
+
+var doubleConfusionProbs = function(speaker_i_utt, state, params)
+{
+  var utt_weights = map(function(i_utt)
+    {
+      return sum(map(function(p_utt)
+        {
+          return confusionProb(speaker_i_utt, p_utt, params) * reverseConfusionProb(p_utt, i_utt, state, params)
+        },
+        utterances
+      ))
+    },
+    utterances
+  )
+
+  var utt_probs = map(function(x) { return x / sum(utt_weights)}, utt_weights)
+
+  return utt_probs
+}
+
+var doubleConfusionProb = function(speaker_i_utt, listener_i_utt, state, params)
+{
+  var utt_probs = doubleConfusionProbs(speaker_i_utt, state, params)
+  return utt_probs[utterances.indexOf(listener_i_utt)]
+}
+
+var meaning_table = {
+  agent_falls: {the_agent: 1, the_patient: 0, it: 1, zero: 1},
+  patient_falls: {the_agent: 0, the_patient: 1, it: 1, zero: 0}
+}
+
+// meaning function to interpret the utterances
+var meaning = function(utterance, state){
+  meaning_table[state][utterance]
+}
+
+//var jump_over_beta = DiscreteBeta(0.5451610, 0.6961924)
+//var wave_bate = DiscreteBeta(1.1358936, 0.6326076)
+//var attack_beta = DiscreteBeta(1.0033267, 0.4721537)
+//var throw_rock_beta = DiscreteBeta(2.970715, 0.198752)
+
+var actionPrior = function(action, action_prior)
+{
+  if (action_prior != -1)
+  {
+    return action_prior
+  }
+  else
+  {
+    return action_priors[action]
+    /*return (action == 'jump_over') ? sample(jump_over_beta) :
+      (action == 'wave') ? sample(wave_bate) :
+      (action == 'attack') ? sample(attack_beta) :
+      (action == 'throw_rock') ? sample(throw_rock_beta) :
+      0.5*/
+  }
+}
+
+var statePrior = function(params)
+{
+  //print(params.action)
+  //print(params.action_prior)
+  var p1 = actionPrior(params.action, params.action_prior)
+  var p2 = 1 - params.salience_prior
+  /*var p3 =
+      params.event_type == 'familiar' ?
+        state == "patient_falls" ? params.train_prior : 1 - params.train_prior :
+      params.event_type == 'surprising' ?
+        state == "patient_falls" ? 1 - params.train_prior : params.train_prior :
+      0.5*/
+  var p3 =
+    params.event_type == "postsurprising" ?
+      params.patient_color == 'blue' ? params.revision_prior :
+      params.patient_color == 'red' ? 1 - params.revision_prior :
+      0.5 :
+    params.patient_color == 'blue' ? params.train_prior :
+    params.patient_color == 'red' ? 1 - params.train_prior :
+    0.5
+  //var p3 = params.event_type == 'surprising' ? params.train_prior : 0.5
+  
+  return p1 * p2 * p3 / (p1 * p2 * p3 + (1 - p1) * (1 - p2) * (1 - p3)) // patient falling probability
+}
+
+var stateByPriors = function(params)
+{
+  var p = statePrior(params)
+  
+  var state_id = +flip(p)
+  return states[state_id]
+}
+
+
+// DIRECT AND INVERSE RSA
+
+// literal speaker
+var speaker0 = function(state, params)
 {
   Infer({model: function()
   {
-    var utterance = uniformDraw(utterances)
-
-    var p1 = sum
-    (
-      map
-      (
-        function(p_utt)
-        {
-          p_confuse(utterance, p_utt, certain_zero, certain_it) *
-          Math.exp
-          (
-            literalListener(action, patient_color, p_utt, alpha, certain_zero, certain_it, agent_bias, prior, train_prior, np_cost, pro_cost).score(state)
-          )
-        },
-        utterances
-      )
-    )
-    
-    factor(alpha * (Math.log(p1) - cost(utterance, np_cost, pro_cost)))
-    
-    // Transforming zero to it or vice versa with parametrized probabilities
-    /*var ut = ((utterance == 'zero' && flip(1-certain_zero)) ? ("it") : ((utterance == 'it' && flip(1-certain_it)) ? ("zero") : (utterance)))
-    
-    factor(alpha * (literalListener(action, ut, certain_zero, certain_it, agent_bias, prior).score(state) - cost(utterance, np_cost, pro_cost)))
-    */
-
-    return utterance
-  }})
-}
-
-// pragmatic listener
-var pragmaticListener = function(action, patient_color, utterance, alpha, certain_zero, certain_it, agent_bias, prior, train_prior, np_cost, pro_cost){
-  Infer
-  (
-    {
-      model: function()
-      {
-        var state = stateByPrior(action, patient_color, prior, train_prior, agent_bias)
-
-        var certain_zero2 = certain_zero / (certain_zero + 1 - certain_it)
-        var certain_it2 = certain_it / (certain_it + 1 - certain_zero)
-
-        // Transforming zero to it or vice versa with parametrized probabilities
-        var ut = ((utterance == 'zero' && flip(1-certain_zero2)) ? ("it") : ((utterance == 'it' && flip(1-certain_it2)) ? ("zero") : (utterance)))
-        
-        // Introducing agent bias in interpreting pronoun
-        //var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
-        var ut2 = ut
-
-        observe(speaker(action, patient_color, state, alpha, certain_zero, certain_it, agent_bias, prior, train_prior, np_cost, pro_cost), ut2)
-        return state
-      }//,
-      //method: "rejection"
-    }
-  )
-}
-
-var pragmaticListener_simple = function(action, patient_color, utterance, alpha, certain_zero, certain_it, agent_bias, prior, train_prior, np_cost, pro_cost){
-  Infer
-  (
-    {
-      model: function()
-      {
-        var state = stateByPrior(action, patient_color, prior, train_prior, 0.5)
-
-        var certain_zero2 = certain_zero / (certain_zero + 1 - certain_it)
-        var certain_it2 = certain_it / (certain_it + 1 - certain_zero)
-
-        // Transforming zero to it or vice versa with parametrized probabilities
-        var ut = ((utterance == 'zero' && flip(1 - certain_zero2)) ? ("it") : ((utterance == 'it' && flip(1 - certain_it2)) ? ("zero") : (utterance)))
-         
-        // Introducing agent bias in interpreting pronoun
-        var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
-        //var ut2 = ut
-
-        observe(speaker(action, patient_color, state, alpha, certain_zero, certain_it, agent_bias, prior, train_prior, np_cost, pro_cost), ut2)
-        return state
-      }//,
-      //method: "rejection"
-    }
-  )
-}
-
-// hyperpragmatic speaker
-var pragmaticSpeaker2 = function(action, state, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost)
-{
-  Infer({model: function(){
-    var utterance = uniformDraw(utterances)
-    observe(pragmaticListener(action, utterance, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost), state)
-    return utterance
-  }})
-}
-
-
-// INVERSE RSA
-
-// literal speaker
-var literalSpeaker = function(state){
-  Infer({model: function(){
-    var utterance = uniformDraw(utterances)
+    var utterance = utteranceByPrior(state, params)
     condition(meaning(utterance, state))
     return utterance
   }})
 }
 
-// pragmatic listener
-var listener = function(action, utterance, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost){
+var literalSpeaker = speaker0
+
+// literal listener
+var listener0_sample = function(utterance, params)
+{
   Infer
   (
     {
       model: function()
       {
-        var state = stateByPrior(action, prior)
-
-        // Transforming zero to it or vice versa with parametrized probabilities
-        var ut = ((utterance == 'zero' && flip(1-certain_zero)) ? ("it") : ((utterance == 'it' && flip(1-certain_it)) ? ("zero") : (utterance)))
-
-        // Introducing agent bias in interpreting pronoun
-        var ut2 = ((ut == 'it') ? (flip(agent_bias) ? ("the_agent") : ("the_patient")) : ut)
-        
-        observe(literalSpeaker(state), ut2)
-        
+        var state = stateByPriors(params)
+        var i_utt = sample(intendedUtterancePosterior(utterance, state, params))
+        condition(meaning(i_utt, state))
         return state
-      }//,
-      //method: "rejection"
+      }
     }
   )
 }
 
-// pragmatic speaker
-var pragmaticSpeaker = function(action, state, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost){
+var listener0_sum = function(utterance, params)
+{
   Infer
   (
     {
       model: function()
       {
-        var utterance = uniformDraw(utterances)
-        factor(alpha * (listener(action, utterance, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost).score(state))
-               -cost(utterance, np_cost, pro_cost)
-              )
-        return utterance
-      }//,
-      //method: "rejection"
+        var state = stateByPriors(params)
+
+        var utility = sum
+        (
+          map
+          (
+            function(i_utt)
+            {
+              var utterance_prior = utterancePrior(i_utt, state, params)
+              var confusion_prob = confusionProb(i_utt, utterance, params)
+              var likelihood = meaning(i_utt, state)
+              return utterance_prior * confusion_prob * likelihood
+            },
+            utterances
+          )
+        )
+
+        factor(Math.log(utility))
+
+        return state
+      }
     }
   )
 }
+
+var listener0 = listener0_sum
+
+var literalListener = listener0
+
+// higher order speaker
+var speakerN = function(n, state, params)
+{
+  if (n == 0)
+  {
+    return speaker0(state, params)
+  }
+  else
+  {
+    var salience_prior = (state == 'agent_falls' ? params.salience_prior : params.agent_bias)
+
+    var patient_color =
+      (params.event_type == "familiar")   ? (state == 'patient_falls') ? ('blue') : ('red') :
+      (params.event_type == "surprising") ? (state == 'patient_falls') ? ('red') : ('blue'):
+      (params.event_type == "postsurprising") ? (state == 'patient_falls') ? ('blue') : ('red'):
+      ('yellow')
+
+    var listener_params = Object.assign({}, params, {salience_prior: salience_prior, patient_color: patient_color})
+
+    Infer({model: function()
+    {
+      var utterance = utteranceByPrior(state, params)
+
+      var utility = sum
+      (
+        map
+        (
+          function(p_utt)
+          {
+            var confusion_prob = confusionProb(utterance, p_utt, params)
+            var likelihood = listenerN(n - 1, p_utt, listener_params).score(state)
+            return confusion_prob == 0 ? 0 : confusion_prob * likelihood
+          },
+          utterances
+        )
+      )
+      
+      factor(params.alpha == 0 ? 0 : params.alpha * utility)
+
+      return utterance
+    }
+    })
+  }
+}
+
+// higher order listener
+var listenerN_sample = function(n, utterance, params)
+{
+  if (n == 0)
+  {
+    return listener0(utterance, params)
+  }
+  else
+  {
+    Infer
+    (
+      {
+        model: function()
+        {
+          var state = stateByPriors(params)
+          var i_utt = sample(intendedUtterancePosterior(utterance, state, params))
+          observe(speakerN(n - 1, state, params), i_utt)
+          return state
+        }
+      }
+    )
+  }
+}
+
+var listenerN_sum = function(n, utterance, params)
+{
+  if (n == 0)
+  {
+    return listener0(utterance, params)
+  }
+  else
+  {
+    Infer
+    (
+      {
+        model: function()
+        {
+          var state = stateByPriors(params)
+
+          var utility = sum
+          (
+            map
+            (
+              function(i_utt)
+              {
+                var utterance_prior = utterancePrior(i_utt, state, params)
+                var confusion_prob = confusionProb(i_utt, utterance, params)
+                var likelihood = Math.exp(speakerN(n - 1, state, params).score(i_utt))
+                return utterance_prior * confusion_prob * likelihood
+              },
+              utterances
+            )
+          )
+
+          factor(Math.log(utility))
+
+          return state
+        }
+      }
+    )
+  }
+}
+
+var listenerN = listenerN_sum
+
+// direct pragmatic speaker
+var speaker1 = function(state, params)
+{
+  return speakerN(1, state, params)
+}
+
+var pragmaticSpeaker = speaker1
+
+// direct pragmatic listener
+var listener2 = function(utterance, params)
+{
+  return listenerN(2, utterance, params)
+}
+
+var pragmaticListener = listener2
+
+// direct hyperpragmatic speaker
+var speaker3 = function(state, params)
+{
+  return speakerN(3, state, params)
+}
+
+// inverse pragmatic listener
+var listener1 = function(utterance, params)
+{
+  return listenerN(1, utterance, params)
+}
+
+var inversePragmaticListener = listener1
+
+// inverse pragmatic speaker
+var speaker2 = function(state, params)
+{
+  return speakerN(2, state, params)
+}
+
+var inversePragmaticSpeaker = speaker2
 
 
 ////////////////
 // Data Analysis
 ////////////////
 
-var dataAnalysis = function(actions, goal, speaker_type, listener_type, cost, params){
+var modelMainExps = function(fitting_params, fixed_params)
+{
+  var alpha = uniform({a:1, b:10});
+  var alpha_familiar = alpha//uniform({a:1, b:10});
+  var alpha_surprising = alpha//uniform({a:1, b:10});
+  var alpha_neutral = alpha//uniform({a:1, b:10});
 
-  // priors over parameters of interest
+  var np_cost = (fitting_params.cost == "np" || fitting_params.cost == "both") ? uniform({a:0, b:1}) : (0)
+  var pro_cost = (fitting_params.cost == "pro" || fitting_params.cost == "both") ? uniform({a:0, b:1}) : (0)
 
-var alpha_prod = 3.196357715990756
-var certain_zero = 0.9009528804057871
-var certain_it = 0.7644075023404083
-var certain_surp = 0.6119727950857633
-var certain_surp_it = 0.5452660924045324
-var certain_low = 0.9201772410609999
-var certain_low_it = 0.8254770063204621
-var certain_high = 0.7974014959138062
-var certain_high_it = 0.6743168632307904
-var agent_bias = 0.75
-var train_prior = 0.5980961561234336
-var jump_over_prior = 0.4131743041897438
-var wave_prior = 0.636905925950353
-var attack_prior = 0.6833511184767463
-var throw_rock_prior = 0.7945793434767273
+  var certain_zero = uniform({a:0, b:1});
+  var certain_it = uniform({a:0, b:1})
+  var certain_surp = certain_zero//uniform({a:0, b:1})
+  var certain_surp_it = certain_it//uniform({a:0, b:1})
 
-  var alpha = ('alpha' in params) ? params['alpha'] : uniform({a:0, b:10});
-  //var alpha_prod = ('alpha' in params) ? params['alpha'] : uniform({a:0, b:10});
-  //var certain_zero = ('certain_zero' in params) ? params['certain_zero'] : uniform({a:0.5, b:1});
-  //var certain_it = certain_zero;
-  //var certain_it = uniform({a:0.5, b:certain_zero})
-  //var certain_surp = uniform({a:0.5, b:1})
-  //var certain_surp_it = uniform({a:0.5, b:certain_surp})
-  //var agent_bias = 0.75//('agent_bias' in params) ? params['agent_bias'] : uniform({a:0.5, b:1})
-  //var prior = -1;//uniform({a:0, b:1})
-  var np_cost = (cost == "np" || cost == "both") ? uniform({a:0, b:4}) : (0)
-  var pro_cost = (cost == "pro" || cost == "both") ? uniform({a:0, b:np_cost}) : (0)
+  var certain_clean = uniform({a:0, b:1})
+  var certain_clean_it = uniform({a:0, b:1})
+  var certain_low = uniform({a:0, b:1})
+  var certain_low_it = uniform({a:0, b:1})
+  var certain_high = uniform({a:0, b:1})
+  var certain_high_it = uniform({a:0, b:1})
+
+  var salience_prior = 0.5//uniform({a:0, b:1})
+  var agent_bias = uniform({a:0.6, b:1})
+  var subject_bias = 0.5//uniform({a:0.6, b:1})
   
-  //var jump_over_prior = uniform({a:0, b:1})
-  //var wave_prior = uniform({a:0, b:1})
-  //var attack_prior = uniform({a:0, b:1})
-  //var throw_rock_prior = uniform({a:0, b:1})
+  var jump_over_prior = uniform({a:0, b:1})
+  var wave_prior = uniform({a:0, b:1})
+  var attack_prior = uniform({a:0, b:1})
+  var throw_rock_prior = uniform({a:0, b:1})
   var overall_prior = uniform({a:0, b:1})
   
-  var local_priors = {jump_over: jump_over_prior, wave: wave_prior, attack: attack_prior, throw_rock: throw_rock_prior, overall: overall_prior}
-  //var local_priors = priors
+  var train_prior = uniform({a:0, b:1})
+  var revision_prior = uniform({a:0, b:1})
   
-  //var train_prior = uniform({a:0.5, b:1})
-  
-  var certain_clean = uniform({a:0.5, b:1})
-  var certain_clean_it = uniform({a:0.5, b:certain_clean})
-  //var certain_low = uniform({a:0.5, b:1})
-  //var certain_low_it = uniform({a:0.5, b:certain_low})
-  //var certain_high = uniform({a:0.5, b:1})
-  //var certain_high_it = uniform({a:0.5, b:certain_high})
+  var random_params = {
+      alpha: alpha,
+      alpha_familiar: alpha_familiar,
+      alpha_surprising: alpha_surprising,
+      alpha_neutral: alpha_neutral,
+      certain_zero: certain_zero,
+      certain_it: certain_it,
+      certain_surp: certain_surp,
+      certain_surp_it: certain_surp_it,
+      certain_clean: certain_clean,
+      certain_clean_it: certain_clean_it,
+      certain_low: certain_low,
+      certain_low_it: certain_low_it,
+      certain_high: certain_high,
+      certain_high_it: certain_high_it,
+      salience_prior: salience_prior,
+      agent_bias: agent_bias,
+      subject_bias: subject_bias,
+      np_cost: np_cost,
+      pro_cost: pro_cost,
+      jump_over_prior: jump_over_prior,
+      wave_prior: wave_prior,
+      attack_prior: attack_prior,
+      throw_rock_prior: throw_rock_prior,
+      overall_prior: overall_prior,
+      train_prior: train_prior,
+      revision_prior: revision_prior
+    }
 
-  var testSpeaker = (speaker_type == 'literal') ? literalSpeaker : ((speaker_type == 'direct') ? speaker : ((speaker_type == 'direct2') ? pragmaticSpeaker2 : pragmaticSpeaker))
-  var testListener = (listener_type == 'literal') ? literalListener : ((listener_type == 'direct') ? pragmaticListener : listener)
+  var params = Object.assign({}, random_params, fixed_params) // override random parameters by given fixed ones
 
-  // speaker production part
+  var local_action_priors = {jump_over: params.jump_over_prior, wave: params.wave_prior, attack: params.attack_prior, throw_rock: params.throw_rock_prior, overall: params.overall_prior}
+  //var local_action_priors = action_priors
 
-  /*var PP_speaker = (speaker_type == 'none') ? (null) : (
-    map(function(action){
-      map(function(s){ 
-        
-        var patient_color = (prod_data == prod_data_training_familiar) ?
-            ((s == 'patient_falls') ? ('blue') : ('red')) :
-            ((prod_data == prod_data_training_surprising) ?
-            ((s == 'patient_falls') ? ('red') : ('blue')):
-            ('yellow'))
+  var speaker_training = []/*map
+  (
+    function(action)
+    {
+      return {
+        data: prod_data_training[action],
+        params: {
+          event_type: "neutral",
+          action: action,
+          alpha: params.alpha_prod,
+          certain_zero: params.certain_zero,
+          certain_it: params.certain_it,
+          salience_prior: params.salience_prior,
+          agent_bias: agent_bias,
+          subject_bias: subject_bias,
+          action_prior: local_action_priors[action],
+          train_prior: params.train_prior,
+          revision_prior: revision_prior,
+          np_cost: params.np_cost,
+          pro_cost: params.pro_cost
+        },
+        speaker: fitting_params.speaker,
+        states: states,
+        utterances: utterances
+      }
+    },
+    fitting_params.actions
+  )*/
 
-        var speaker_predictions = testSpeaker(action, patient_color, s, alpha_prod, certain_zero, certain_it, agent_bias, local_priors[action], train_prior, np_cost, pro_cost)
-        var speaker_data = prod_data[action][s]
+  var speaker_familiar = map
+  (
+    function(action)
+    {
+      return {
+        data: prod_data_training_familiar[action],
+        params: {
+          event_type: "familiar",
+          action: action,
+          alpha: params.alpha_familiar,
+          certain_zero: params.certain_zero,
+          certain_it: params.certain_it,
+          salience_prior: params.salience_prior,
+          agent_bias: agent_bias,
+          subject_bias: subject_bias,
+          action_prior: local_action_priors[action],
+          train_prior: params.train_prior,
+          revision_prior: revision_prior,
+          np_cost: params.np_cost,
+          pro_cost: params.pro_cost
+        },
+        speaker: fitting_params.speaker,
+        states: states,
+        //states: ["agent_falls"],
+        utterances: utterances
+      }
+    },
+    fitting_params.actions
+  )
 
-        var utt_probs = map(function(u){
-          return Math.exp(speaker_predictions.score(u))
-        }, _.keys(speaker_data))
+  var speaker_surprising = map
+  (
+    function(action)
+    {
+      return {
+        data: prod_data_training_surprising[action],
+        params: {
+          event_type: "surprising",
+          action: action,
+          alpha: params.alpha_surprising,
+          certain_zero: params.certain_surp,
+          certain_it: params.certain_surp_it,
+          salience_prior: params.salience_prior,
+          agent_bias: agent_bias,
+          subject_bias: subject_bias,
+          action_prior: local_action_priors[action],
+          train_prior: params.train_prior,
+          revision_prior: revision_prior,
+          np_cost: params.np_cost,
+          pro_cost: params.pro_cost,
+        },
+        speaker: fitting_params.speaker,
+        states: states,
+        //states: ["agent_falls"],
+        utterances: utterances
+      }
+    },
+    fitting_params.actions
+  )
 
-        var utt_count = map(function(u){
-          return speaker_data[u]
-        }, _.keys(speaker_data))
+  var speaker_postsurprising = map
+  (
+    function(action)
+    {
+      return {
+        data: prod_data_training_postsurprising[action],
+        params: {
+          event_type: "postsurprising",
+          action: action,
+          alpha: params.alpha_surprising,
+          certain_zero: params.certain_surp,
+          certain_it: params.certain_surp_it,
+          salience_prior: params.salience_prior,
+          agent_bias: agent_bias,
+          subject_bias: subject_bias,
+          action_prior: local_action_priors[action],
+          train_prior: params.train_prior,
+          revision_prior: revision_prior,
+          np_cost: params.np_cost,
+          pro_cost: params.pro_cost,
+        },
+        speaker: fitting_params.speaker,
+        states: states,
+        //states: ["agent_falls"],
+        utterances: utterances
+      }
+    },
+    fitting_params.actions
+  )
 
-        observe(Multinomial({n: sum(utt_count),
-                             ps: utt_probs}),
-                utt_count)
+  var speaker_no_training = map
+  (
+    function(action)
+    {
+      return {
+        data: prod_data_no_training_rest[action],
+        params: {
+          event_type: "neutral",
+          action: action,
+          alpha: params.alpha_neutral,
+          certain_zero: params.certain_surp,
+          certain_it: params.certain_surp_it,
+          salience_prior: params.salience_prior,
+          agent_bias: agent_bias,
+          subject_bias: subject_bias,
+          action_prior: local_action_priors[action],
+          train_prior: params.train_prior,
+          revision_prior: revision_prior,
+          np_cost: params.np_cost,
+          pro_cost: params.pro_cost,
+        },
+        speaker: fitting_params.speaker,
+        states: states,
+        //states: ["agent_falls"],
+        utterances: utterances
+      }
+    },
+    fitting_params.actions
+  )
 
-        return multinomial({n: sum(utt_count), ps: utt_probs})
+  var speaker_experiments = fitting_params.speaker === null ? [] : speaker_training.concat(speaker_familiar.concat(speaker_surprising.concat(speaker_postsurprising.concat(speaker_no_training))))
 
-      }, states)
-    }, actions))*/
+  var listener_clean = map
+  (
+    function(action)
+    {
+      return {
+        data: perc_data_clean[action],
+        params: {
+          event_type: "neutral",
+          action: action,
+          alpha: params.alpha,
+          certain_zero: params.certain_clean,
+          certain_it: params.certain_clean_it,
+          salience_prior: params.salience_prior,
+          agent_bias: agent_bias,
+          subject_bias: subject_bias,
+          action_prior: local_action_priors[action],
+          train_prior: params.train_prior,
+          revision_prior: revision_prior,
+          np_cost: params.np_cost,
+          pro_cost: params.pro_cost
+        },
+        listener: fitting_params.listener,
+        states: states,
+        utterances: ["it", "zero"]
+      }
+    },
+    fitting_params.actions
+  )
 
-  var PP_speaker = (speaker_type == 'none') ? (null) : (
-    map(function(action){
-      map(function(s){ 
-        
-        var patient_color = (s == 'patient_falls') ? ('blue') : ('red')
+  var listener_low_noise = map
+  (
+    function(action)
+    {
+      return {
+        data: perc_data_low_noise[action],
+        params: {
+          event_type: "neutral",
+          action: action,
+          alpha: params.alpha,
+          certain_zero: params.certain_low,
+          certain_it: params.certain_low_it,
+          salience_prior: params.salience_prior,
+          agent_bias: agent_bias,
+          subject_bias: subject_bias,
+          action_prior: local_action_priors[action],
+          train_prior: params.train_prior,
+          revision_prior: revision_prior,
+          np_cost: params.np_cost,
+          pro_cost: params.pro_cost
+        },
+        listener: fitting_params.listener,
+        states: states,
+        utterances: ["it", "zero"]
+      }
+    },
+    fitting_params.actions
+  )
 
-        var speaker_predictions = testSpeaker(action, patient_color, s, alpha_prod, certain_zero, certain_it, agent_bias, local_priors[action], train_prior, np_cost, pro_cost)
-        var speaker_data = prod_data_training_familiar[action][s]
+  var listener_high_noise = map
+  (
+    function(action)
+    {
+      return {
+        data: perc_data_high_noise[action],
+        params: {
+          event_type: "neutral",
+          action: action,
+          alpha: params.alpha,
+          certain_zero: params.certain_high,
+          certain_it: params.certain_high_it,
+          salience_prior: params.salience_prior,
+          agent_bias: agent_bias,
+          subject_bias: subject_bias,
+          action_prior: local_action_priors[action],
+          train_prior: params.train_prior,
+          revision_prior: revision_prior,
+          np_cost: params.np_cost,
+          pro_cost: params.pro_cost
+        },
+        listener: fitting_params.listener,
+        states: states,
+        utterances: ["it", "zero"]
+      }
+    },
+    fitting_params.actions
+  )
 
-        var utt_probs = map(function(u){
-          return Math.exp(speaker_predictions.score(u))
-        }, _.keys(speaker_data))
+  var listener_experiments = fitting_params.listener === null ? [] : listener_clean.concat(listener_low_noise.concat(listener_high_noise))
 
-        var utt_count = map(function(u){
-          return speaker_data[u]
-        }, _.keys(speaker_data))
-
-        observe(Multinomial({n: sum(utt_count),
-                             ps: utt_probs}),
-                utt_count)
-
-        return multinomial({n: sum(utt_count), ps: utt_probs})
-
-      }, states)
-    }, actions))
-
-  var PP_speaker2 = (speaker_type == 'none') ? (null) : (
-    map(function(action){
-      map(function(s){ 
-        
-        var patient_color = (s == 'patient_falls') ? ('red') : ('blue')
-
-        var speaker_predictions = testSpeaker(action, patient_color, s, alpha_prod, certain_surp, certain_surp_it, agent_bias, local_priors[action], train_prior, np_cost, pro_cost)
-        var speaker_data = prod_data_training_surprising[action][s]
-
-        var utt_probs = map(function(u){
-          return Math.exp(speaker_predictions.score(u))
-        }, _.keys(speaker_data))
-
-        var utt_count = map(function(u){
-          return speaker_data[u]
-        }, _.keys(speaker_data))
-
-        observe(Multinomial({n: sum(utt_count),
-                             ps: utt_probs}),
-                utt_count)
-
-        return multinomial({n: sum(utt_count), ps: utt_probs})
-
-      }, states)
-    }, actions))
-
-  // listener comprehension part
-  
-  var patient_color = 'yellow'
-
-  /*var PP_listener = (listener_type == 'none') ? (null) : (
-    map(function(action){
-      map(function(u){ 
-
-        var listener_predictions = testListener(action, patient_color, u, alpha, certain_zero, certain_it, agent_bias, local_priors[action], train_prior, np_cost, pro_cost)
-        var listener_data = perc_data[action][u]
-
-        var int_probs = map(function(s){
-          return Math.exp(listener_predictions.score(s))
-        }, _.keys(listener_data))
-
-        var int_count = map(function(s){
-          return listener_data[s]
-        }, _.keys(listener_data))
-
-        observe(Multinomial({n: sum(int_count),
-                             ps: int_probs}),
-                int_count)
-
-        return multinomial({n: sum(int_count), ps: int_probs})
-
-      }, ['it', 'zero'])
-    }, actions))
-  
-  var PP_listener2 = null
-  var PP_listener3 = null*/
-
-  var PP_listener = null
-  
-  /*var PP_listener = (listener_type == 'none') ? (null) : (
-    map(function(action){
-      map(function(u){ 
-
-        var listener_predictions = testListener(action, patient_color, u, alpha, certain_clean, certain_clean_it, agent_bias, local_priors[action], train_prior, np_cost, pro_cost)
-        var listener_data = perc_data_clean[action][u]
-
-        var int_probs = map(function(s){
-          return Math.exp(listener_predictions.score(s))
-        }, _.keys(listener_data))
-
-        var int_count = map(function(s){
-          return listener_data[s]
-        }, _.keys(listener_data))
-
-        observe(Multinomial({n: sum(int_count),
-                             ps: int_probs}),
-                int_count)
-
-        return multinomial({n: sum(int_count), ps: int_probs})
-
-      }, ['it', 'zero'])
-    }, actions))*/
-
-  var PP_listener2 = (listener_type == 'none') ? (null) : (
-    map(function(action){
-      map(function(u){ 
-
-        var listener_predictions = testListener(action, patient_color, u, alpha, certain_low, certain_low_it, agent_bias, local_priors[action], train_prior, np_cost, pro_cost)
-        var listener_data = perc_data_low_noise[action][u]
-
-        var int_probs = map(function(s){
-          return Math.exp(listener_predictions.score(s))
-        }, _.keys(listener_data))
-
-        var int_count = map(function(s){
-          return listener_data[s]
-        }, _.keys(listener_data))
-
-        observe(Multinomial({n: sum(int_count),
-                             ps: int_probs}),
-                int_count)
-
-        return multinomial({n: sum(int_count), ps: int_probs})
-
-      }, ['it', 'zero'])
-    }, actions))
-
-  var PP_listener3 = (listener_type == 'none') ? (null) : (
-    map(function(action){
-      map(function(u){ 
-
-        var listener_predictions = testListener(action, patient_color, u, alpha, certain_high, certain_high_it, agent_bias, local_priors[action], train_prior, np_cost, pro_cost)
-        var listener_data = perc_data_high_noise[action][u]
-
-        var int_probs = map(function(s){
-          return Math.exp(listener_predictions.score(s))
-        }, _.keys(listener_data))
-
-        var int_count = map(function(s){
-          return listener_data[s]
-        }, _.keys(listener_data))
-
-        observe(Multinomial({n: sum(int_count),
-                             ps: int_probs}),
-                int_count)
-
-        return multinomial({n: sum(int_count), ps: int_probs})
-
-      }, ['it', 'zero'])
-    }, actions))
-
-  if (goal == 'params')
-    return {alpha: alpha, alpha_prod: alpha_prod, certain_zero: certain_zero, certain_it: certain_it, certain_surp: certain_surp, certain_surp_it: certain_surp_it, certain_clean: certain_clean, certain_clean_it: certain_clean_it, certain_low: certain_low, certain_low_it: certain_low_it, certain_high: certain_high, certain_high_it: certain_high_it, agent_bias: agent_bias, np_cost: np_cost, pro_cost: pro_cost, prior: prior, jump_over_prior: jump_over_prior, wave_prior: wave_prior, attack_prior: attack_prior, throw_rock_prior: throw_rock_prior, overall_prior: overall_prior, train_prior: train_prior}
-  else // if (goal == 'samples')
-    return {PP_speaker: PP_speaker, PP_speaker2: PP_speaker2, PP_listener: PP_listener, PP_listener2: PP_listener2, PP_listener3: PP_listener3}
+  return {
+    params: params,
+    speaker_experiments: speaker_experiments,
+    listener_experiments: listener_experiments
+  }
 }
 
-var rateModel = function(actions, speaker_type, listener_type, cost, params){
+var speakerTrialParams = function(experiment, state)
+{
+  /*var patient_color =
+      (experiment.event_type == "familiar")   ? (state == 'patient_falls') ? ('blue') : ('red') :
+      (experiment.event_type == "surprising") ? (state == 'patient_falls') ? ('red') : ('blue'):
+      (experiment.event_type == "postsurprising") ? (state == 'patient_falls') ? ('blue') : ('red'):
+      ('yellow')
 
-  // priors over parameters of interest
+  return {patient_color: patient_color}*/
+  return {}
+}
 
-  var alpha = ('alpha' in params) ? params['alpha'] : uniform({a:0, b:10});
-  var certain_zero = ('certain_zero' in params) ? params['certain_zero'] : uniform({a:0.5, b:1});
-  var certain_it = certain_zero;
-  //var certain_it = uniform({a:0.5, b:1})
-  var agent_bias = ('agent_bias' in params) ? params['agent_bias'] : uniform({a:0.5, b:1})
-  var prior = -1;//uniform({a:0, b:1})
-  var np_cost = (cost == "np" || cost == "both") ? uniform({a:0, b:4}) : (0)
-  var pro_cost = (cost == "pro" || cost == "both") ? uniform({a:0, b:4}) : (0)
+var listenerTrialParams = function(experiment, utterance)
+{
+  return {patient_color: "yellow"}
+}
+
+var dataAnalysis = function(model_generator, fitting_params, fixed_params)
+{
+  var model = model_generator(fitting_params, fixed_params)
+
+  var predictions = {
+    speaker:
+      map(function(experiment){
+        map(function(state){ 
+              
+          var speaker = experiment.speaker
+
+          var speaker_predictions = speaker(state, Object.assign({}, experiment.params, speakerTrialParams(experiment, state)))
+          var speaker_data = experiment.data[state]
+
+          var utt_probs = map(function(utterance){ return Math.exp(speaker_predictions.score(utterance)) }, _.keys(speaker_data))
+          var utt_count = map(function(utterance){ return speaker_data[utterance] }, _.keys(speaker_data))
+
+          observe(Multinomial({n: sum(utt_count), ps: utt_probs}), utt_count)
+          return multinomial({n: sum(utt_count), ps: utt_probs})
+        },
+        experiment.states)
+      },
+      model.speaker_experiments),
+    
+    listener:
+      map(function(experiment){
+        map(function(utterance){ 
+
+          var listener = experiment.listener
+
+          var listener_predictions = listener(utterance, Object.assign({}, experiment.params, listenerTrialParams(experiment, utterance)))
+          var listener_data = experiment.data[utterance]
+
+          var int_probs = map(function(state){ return Math.exp(listener_predictions.score(state)) }, _.keys(listener_data))
+          var int_count = map(function(state){ return listener_data[state] }, _.keys(listener_data))
+
+          observe(Multinomial({n: sum(int_count), ps: int_probs}), int_count)
+          return multinomial({n: sum(int_count), ps: int_probs})
+        },
+        experiment.utterances)
+      },
+      model.listener_experiments)
+  }
   
-  var testSpeaker = (speaker_type == 'literal') ? literalSpeaker : ((speaker_type == 'direct') ? speaker : ((speaker_type == 'direct2') ? pragmaticSpeaker2 : pragmaticSpeaker))
-  var testListener = (listener_type == 'literal') ? literalListener : ((listener_type == 'direct') ? pragmaticListener : listener)
+  return Object.assign({}, model.params, {samples: predictions}) // union of two dictionaries
+}
 
-  // speaker production part
+var estimateAndSample = function(model_generator, fitting_params, fixed_params, n_samples, to_sample, filename)
+{
+  var burn_samples = 5000
 
-  var speaker_score = (speaker_type == 'none') ? (0) : (sum(
-    map(function(action){
+  var parameter_estimation = Infer({
+    method: "MCMC",
+    samples: n_samples,
+    burn: burn_samples,
+    model: function() {dataAnalysis(model_generator, fitting_params, fixed_params)}})
+
+  //viz(parameter_estimation)
+  //viz.marginals(parameter_estimation)
+
+  print("var params = {")
+  map(
+    function(param)
+    {
+      if (param != 'samples')
+        print("  " + param + ": " + expectation(marginalize(parameter_estimation, param)) + ",")
+    },
+    _.keys(parameter_estimation.samples[0].value)
+  )
+  print("}")
+
+  if (to_sample)
+  {
+    var samples = map(function(x) { x.value.samples }, parameter_estimation.samples)
+    json.write(filename, samples.slice(burn_samples))
+    print("sample saved")
+  }
+}
+
+var modelScoreSample = function(model_generator, fitting_params, fixed_params)
+{
+  var model = model_generator(fitting_params, fixed_params)
+
+  var speaker_score = sum(
+    map(function(experiment){
       return sum(
-        map(function(s){
+        map(function(state){
 
-          var speaker_predictions = testSpeaker(action, s, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost)
-          var speaker_data = prod_data[action][s]
+          var speaker = experiment.speaker
 
-          var utt_probs = map(function(u){
-            return Math.exp(speaker_predictions.score(u))
-          }, _.keys(speaker_data))
+          var speaker_predictions = speaker(state, Object.assign({}, experiment.params, speakerTrialParams(experiment, state)))
+          var speaker_data = experiment.data[state]
 
-          var utt_count = map(function(u){
-            return speaker_data[u]
-          }, _.keys(speaker_data))
+          var utt_probs = map(function(utterance){ return Math.exp(speaker_predictions.score(utterance)) }, _.keys(speaker_data))
+          var utt_count = map(function(utterance){ return speaker_data[utterance] }, _.keys(speaker_data))
 
           return Multinomial({n: sum(utt_count), ps: utt_probs}).score(utt_count)
+        },
+        experiment.states))
+    },
+    model.speaker_experiments))
 
-        }, states))
-    }, actions)))
-
-  // listener comprehension part
-
-  var listener_score = (listener_type == 'none') ? (0) : (sum(
-    map(function(action){
+  var listener_score = sum(
+    map(function(experiment){
       return sum(
         map(function(u){
 
-          var listener_predictions = testListener(action, u, alpha, certain_zero, certain_it, agent_bias, prior, np_cost, pro_cost)
-          var listener_data = perc_data[action][u]
+          var listener = experiment.listener
 
-          var int_probs = map(function(s){
-            return Math.exp(listener_predictions.score(s))
-          }, _.keys(listener_data))
+          var listener_predictions = listener(utterance, Object.assign({}, experiment.params, listenerTrialParams(experiment, utterance)))
+          var listener_data = experiment.data[utterance]
 
-          var int_count = map(function(s){
-            return listener_data[s]
-          }, _.keys(listener_data))
+          var int_probs = map(function(state){ return Math.exp(listener_predictions.score(state)) }, _.keys(listener_data))
+          var int_count = map(function(state){ return listener_data[state] }, _.keys(listener_data))
 
           return Multinomial({n: sum(int_count), ps: int_probs}).score(int_count)
 
-        }, ['it', 'zero']))
-    }, actions)))
+        },
+        experiment.utterances))
+    },
+    model.listener_experiments))
 
   return Math.exp(speaker_score + listener_score)
 }
 
-var estimateParams = function(actions, speaker_type, listener_type, cost, n_samples)
+var modelScore = function(model_generator, fitting_params, fixed_params, n_samples)
 {
-  var params = {};
-  
-  var parameter_estimation = Infer({
-    method: "MCMC",
-    samples: n_samples,
-    burn: 100,
-    model: function() {dataAnalysis(actions, 'params', speaker_type, listener_type, cost, params)}})
+  var score = expectation
+  (
+    Infer
+    (
+      {
+        method: "forward",
+        samples: n_samples,
+        model: function() {modelScoreSample(model_generator, fitting_params, fixed_params)}
+      }
+    )
+  )
 
-  viz(parameter_estimation)
-  viz.marginals(parameter_estimation)
-
-  print("var alpha = " + expectation(marginalize(parameter_estimation, "alpha")))
-  print("var alpha_prod = " + expectation(marginalize(parameter_estimation, "alpha_prod")))
-  print("var certain_zero = " + expectation(marginalize(parameter_estimation, "certain_zero")))
-  print("var certain_it = " + expectation(marginalize(parameter_estimation, "certain_it")))
-  print("var certain_surp = " + expectation(marginalize(parameter_estimation, "certain_surp")))
-  print("var certain_surp_it = " + expectation(marginalize(parameter_estimation, "certain_surp_it")))
-  print("var certain_clean = " + expectation(marginalize(parameter_estimation, "certain_clean")))
-  print("var certain_clean_it = " + expectation(marginalize(parameter_estimation, "certain_clean_it")))
-  print("var certain_low = " + expectation(marginalize(parameter_estimation, "certain_low")))
-  print("var certain_low_it = " + expectation(marginalize(parameter_estimation, "certain_low_it")))
-  print("var certain_high = " + expectation(marginalize(parameter_estimation, "certain_high")))
-  print("var certain_high_it = " + expectation(marginalize(parameter_estimation, "certain_high_it")))
-  print("var agent_bias = " + expectation(marginalize(parameter_estimation, "agent_bias")))
-  print("var train_prior = " + expectation(marginalize(parameter_estimation, "train_prior")))
-  print("var jump_over_prior = " + expectation(marginalize(parameter_estimation, "jump_over_prior")))
-  print("var wave_prior = " + expectation(marginalize(parameter_estimation, "wave_prior")))
-  print("var attack_prior = " + expectation(marginalize(parameter_estimation, "attack_prior")))
-  print("var throw_rock_prior = " + expectation(marginalize(parameter_estimation, "throw_rock_prior")))
-  print("var overall_prior = " + expectation(marginalize(parameter_estimation, "overall_prior")))
-  print("var np_cost = " + expectation(marginalize(parameter_estimation, "np_cost")))
-  print("var pro_cost = " + expectation(marginalize(parameter_estimation, "pro_cost")))
+  return score
 }
 
-var getSamples = function(actions, speaker_type, listener_type, cost, n_samples)
+var params =
 {
-  var params = {};
+  alpha: 5.461589459014147,
 
-  var samples = Infer({
-    method: "MCMC",
-    samples: n_samples,
-    burn: 1000,
-    model: function() {dataAnalysis(actions, 'samples', speaker_type, listener_type, cost, params)}})
+  action: "jump_over",
+  salience_prior: 0.5,
+  action_prior: -1,
+  train_prior: 0.5,
 
-  print(JSON.stringify(samples.support()))
+  certain_zero: 0.7,
+  certain_it: 1,
+  np_cost: 0,
+  pro_cost: 0,
+
+  salience_prior: 0.75,
+
+  patient_color: 'yellow'
 }
 
-var compareModels = function(actions, cost, n_samples)
-{
-  var params = {};
-  
-  var direct_direct = expectation(Infer({
-    method: "forward",
-    samples: n_samples,
-    model: function() {rateModel(actions, 'direct', 'direct', cost, params)}}))
-
-  var inverse_inverse = expectation(Infer({
-    method: "forward",
-    samples: n_samples,
-    model: function() {rateModel(actions, 'inverse', 'inverse', cost, params)}}))
-
-  var direct_inverse = expectation(Infer({
-    method: "forward",
-    samples: n_samples,
-    model: function() {rateModel(actions, 'direct', 'inverse', cost, params)}}))
-
-  var inverse_direct = expectation(Infer({
-    method: "forward",
-    samples: n_samples,
-    model: function() {rateModel(actions, 'inverse', 'direct', cost, params)}}))
-
-  print('1. Direct speaker, direct listener: ' + direct_direct)
-  print('2. Inverse speaker, inverse listener: ' + inverse_inverse + ', ' + ((inverse_inverse > direct_direct) ? (inverse_inverse/direct_direct + ' times better then the 1st'):(direct_direct/inverse_inverse + ' times worse then the 1st')))
-  print('3. Direct speaker, inverse listener: ' + direct_inverse + ', ' + ((direct_inverse > direct_direct) ? (direct_inverse/direct_direct + ' times better then the 1st'):(direct_direct/direct_inverse + ' times worse then the 1st')))
-  print('4. Inverse speaker, direct listener: ' + inverse_direct + ', ' + ((inverse_direct > direct_direct) ? (inverse_direct/direct_direct + ' times better then the 1st'):(direct_direct/inverse_direct + ' times worse then the 1st')))
+var params = {
+  action: "jump_over",
+  alpha: 1.3216384136344415,
+  //alpha: 1.3216384136344415,
+  alpha_prod: 1.3216384136344415,
+  certain_zero: 0.18181047256109595,
+  certain_it: 0.19655744467536507,
+  certain_surp: 0.18181047256109595,
+  certain_surp_it: 0.19655744467536507,
+  certain_clean: 0.5027770806291175,
+  certain_clean_it: 0.4865326851574112,
+  certain_low: 0.4927208071461609,
+  certain_low_it: 0.5208939518035943,
+  certain_high: 0.5036202814769138,
+  certain_high_it: 0.531343825515458,
+  //salience_prior: 0.1,
+  salience_prior: 0.9874629791483229,
+  agent_bias: 0.4910976258894953,
+  np_cost: 0.46693173494785367,
+  pro_cost: 2,
+  action_prior: 0.7250707725782211,
+  jump_over_prior: 0.7250707725782211,
+  wave_prior: 0.7753860405480993,
+  attack_prior: 0.896979960843635,
+  throw_rock_prior: 0.9278289805956108,
+  overall_prior: 0.5104285003825192,
+  train_prior: 0.6207210193712092,
+  patient_color: "yellow"
 }
 
-var gridSearch = function(actions, cost, n_samples, alpha1, alpha2, certain1, certain2, bias1, bias2)
-{
-  var params = {alpha: alpha1, certain_zero: certain1, agent_bias: bias1};
-  
-  var steps = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  
-  map(
-    function(step)
-    {
-      var alpha = alpha1 + (alpha2-alpha1)/10*step;
-    },
-    steps
-  );
-  
-  var direct_direct = expectation(Infer({
-    method: "forward",
-    samples: n_samples,
-    model: function() {rateModel(actions, 'direct', 'direct', cost, params)}}))
-}
+var utterance = "it"
+var state = "patient_falls"
 
+//display(utterancePriors("agent_falls", params))
+//display(statePrior(params))
+//display(literalListener(utterance, params))
+//display(listener0_simple(utterance, params))
+//display(pragmaticSpeaker(state, params))
+//display(pragmaticListener(utterance, params))
 
-var prod_data = prod_data_training_familiar
-var perc_data = perc_data_high_noise
+//display(literalSpeaker(state, params))
+//display(inversePragmaticListener(utterance, params))
+//display(inversePragmaticSpeaker(state, params))
 
 var actions = ['jump_over', 'wave', 'attack', 'throw_rock']
+//var actions = ['jump_over']
 //var actions = ['overall']
 
-// 1. Returns mean values of the model parameters estimated based on the experimental data
-//estimateParams(actions, 'direct', 'literal', 'none', 20000)
+var params = {
+  alpha: 2.258166368608746,
+  alpha_familiar: 2.258166368608746,
+  alpha_surprising: 2.258166368608746,
+  alpha_neutral: 2.258166368608746,
+  certain_zero: 0.5882058343320492,
+  certain_it: 0.35347026169995244,
+  certain_surp: 0.5882058343320492,
+  certain_surp_it: 0.35347026169995244,
+  certain_clean: 0.9261269532590238,
+  certain_clean_it: 0.8972801630556927,
+  //certain_zero: 0.20279241267664605,
+  //certain_it: 0.9587267074671542,
+  certain_low: 0.3404147472030492,
+  certain_low_it: 0.9629816452619403,
+  certain_high: 0.20279241267664605,
+  certain_high_it: 0.9587267074671542,
+  salience_prior: 0.5,
+  agent_bias: 0.6636670078911818,
+  subject_bias: 0.5,
+  np_cost: 0.19495783426319335,
+  //pro_cost: 0.3018716692506994,
+  pro_cost: 0,
+  jump_over_prior: 0.4591269994120075,
+  wave_prior: 0.583068864688124,
+  attack_prior: 0.6485896225557346,
+  throw_rock_prior: 0.7784058377664732,
+  overall_prior: 0.4923840276842593,
+  train_prior: 0.5917441120431489,
+  revision_prior: 0.36410839507593395,
+}
 
-// 2. Gets samples to test the porsterior predictions of the model (copy the output to sample.json file and process it in R) 
-getSamples(actions, 'direct', 'literal', 'none', 5000)
-
-// 3. Compares different RSA models: direct, inverse and two mixed ones. Bigger number is better
-//compareModels(actions, 'none', 10000)
+//estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, params, 25000, true, "sample0.json")
+//estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener1, actions: actions, cost: 'both'}, {}, 25000, true, "sample1.json")
+//estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener2, actions: actions, cost: 'both'}, {}, 25000, true, "sample2.json")
+//estimateAndSample(modelMainExps, {actions: actions, cost: 'np'}, {}, speaker, listener, 20000, true, "sample2.json")
+//estimateAndSample(modelMainExps, {actions: actions, cost: 'np'}, {}, pragmaticSpeaker, literalListener, 20000, true, "sample2.json")
 
 /*
-var action = "overall"
-var utterance = "zero"
-var certain_zero = 1
-var certain_it = 0.7
-var agent_bias = 0.5
-var prior = 0.68
-var train_prior = 0.5
+//print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, speaker, null, 5000))
+// 2.830913717775092e-35
+//print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, pragmaticSpeaker, null, 5000))
+// 1.8924541425448544e-37
 
-var state = "agent_falls"
-var alpha = 2
-var np_cost = 0
-var pro_cost = 0
+//print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, null, literalListener, 5000))
+// 1.1595303434488406e-17
+//print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, null, listener, 5000))
+// 2.590728649978349e-18
+//print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, null, pragmaticListener, 5000))
+// 1.0493999571332348e-18
 
-var patient_color = 'yellow'
+print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, speaker, literalListener, 5000))
+// 6.853143819316115e-63, 1.326836702000898e-69
+print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, speaker, listener, 5000))
+// 7.338974354660147e-71, 4.785846054402111e-67
+//print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, speaker, pragmaticListener, 5000))
+// 2.6498707063122846e-88
 
-var l0 = literalListener(action, patient_color, utterance, certain_zero, certain_it, agent_bias, prior, train_prior)
-display(l0)
-
-//var l0t = literalListener_salience(action, patient_color, utterance, certain_zero, certain_it, agent_bias, prior, train_prior)
-//display(l0t)
-
-var s1 = speaker(action, patient_color, state, alpha, certain_zero, certain_it, agent_bias, prior, train_prior, np_cost, pro_cost)
-display(s1)
-
-var l1 = pragmaticListener(action, patient_color, utterance, alpha, certain_zero, certain_it, agent_bias, prior, train_prior, np_cost, pro_cost)
-display(l1)
+print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, pragmaticSpeaker, literalListener, 5000))
+// 9.38411454583206e-67
+print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, pragmaticSpeaker, listener, 5000))
+// 2.110409137271314e-74
+print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, pragmaticSpeaker, pragmaticListener, 5000))
+// 1.673692303539975e-85
 */
+
+//print(sample(DiscreteBeta(0.5451610, 0.6961924)))

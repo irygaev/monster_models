@@ -3,7 +3,7 @@ var referent = ["Subject", "Object"]
 
 // if subject bias, subject more likely to be referred to; same for object
 var referentPrior = function() {
-  categorical([0.6, 0.4], referent)
+  categorical([0.5, 0.5], referent)
 }
 
 // utility optimization parameter
@@ -609,7 +609,7 @@ var pragmaticListener_35 = mem(function(utterance) {
   }})
 })
 
-speaker_1("Subject")
+/*speaker_1("Subject")
 speaker_1("Object")
 speaker_2("Subject")
 speaker_2("Object")
@@ -679,3 +679,26 @@ speaker_34("Subject")
 speaker_34("Object")
 speaker_35("Subject")
 speaker_35("Object")
+*/
+
+display(speaker_1("Subject"))
+display(speaker_2("Subject"))
+display(speaker_4("Subject"))
+display(speaker_8("Subject"))
+//display(speaker_16("Subject"))
+//display(speaker_32("Subject"))
+print("---------------------------------")
+display(speaker_1("Object"))
+display(speaker_2("Object"))
+display(speaker_4("Object"))
+display(speaker_8("Object"))
+//display(speaker_16("Object"))
+//display(speaker_32("Object"))
+
+print("---------------------------------")
+//display(literalListener("Pronoun"))
+display(pragmaticListener_1("Pronoun"))
+display(pragmaticListener_2("Pronoun"))
+display(pragmaticListener_4("Pronoun"))
+display(pragmaticListener_8("Pronoun"))
+

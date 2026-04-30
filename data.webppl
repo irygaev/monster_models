@@ -1,0 +1,387 @@
+var prod_data_no_training = {
+  jump_over: {
+    agent_falls: {the_patient: 0, the_patient: 0, the_agent: 27, it: 17, zero: 58, },
+    patient_falls: {the_agent: 0, the_patient: 77, it: 2, zero: 4, },
+  },
+  wave: {
+    agent_falls: {the_patient: 0, the_agent: 44, it: 26, zero: 37, },
+    patient_falls: {the_agent: 0, the_agent: 0, the_patient: 105, it: 3, zero: 0, },
+  },
+  attack: {
+    agent_falls: {the_patient: 0, the_agent: 37, it: 16, zero: 56, },
+    patient_falls: {the_agent: 0, the_patient: 62, it: 9, zero: 1, },
+  },
+  throw_rock: {
+    agent_falls: {the_patient: 0, the_agent: 87, it: 12, zero: 10, },
+    patient_falls: {the_agent: 0, the_patient: 78, it: 5, zero: 1, },
+  },
+  overall: {
+    agent_falls: {the_patient: 0, the_agent: 195, it: 71, zero: 161, },
+    patient_falls: {the_agent: 0, the_patient: 322, it: 19, zero: 6, }
+  }
+}
+
+//json.write('prod_data_no_training.json', prod_data_no_training);
+
+var prod_data_no_training_first = {
+  jump_over: {
+    agent_falls: {the_patient: 0, the_agent: 3, it: 4, zero: 11, },
+    patient_falls: {the_agent: 0, the_patient: 9, it: 0, zero: 0, },
+  },
+  wave: {
+    agent_falls: {the_patient: 0, the_agent: 0, it: 6, zero: 9, },
+    patient_falls: {the_agent: 0, the_patient: 18, it: 1, zero: 0, },
+  },
+  attack: {
+    agent_falls: {the_patient: 0, the_agent: 3, it: 4, zero: 15, },
+    patient_falls: {the_agent: 0, the_patient: 4, it: 1, zero: 0, },
+  },
+  throw_rock: {
+    agent_falls: {the_patient: 0, the_agent: 9, it: 3, zero: 3, },
+    patient_falls: {the_agent: 0, the_patient: 6, it: 0, zero: 0, },
+  },
+  overall: {
+    agent_falls: {the_patient: 0, the_agent: 15, it: 17, zero: 38, },
+    patient_falls: {the_agent: 0, the_patient: 37, it: 2, zero: 0, }
+  }
+}
+
+//json.write('prod_data_no_training_first.json', prod_data_no_training_first);
+
+
+var prod_data_no_training_rest = {
+  jump_over: {
+    agent_falls: {the_patient: 0, the_agent: 24, it: 13, zero: 47, },
+    patient_falls: {the_agent: 0, the_patient: 68, it: 2, zero: 4, },
+  },
+  wave: {
+    agent_falls: {the_patient: 0, the_agent: 44, it: 20, zero: 28, },
+    patient_falls: {the_agent: 0, the_patient: 87, it: 2, zero: 0, },
+  },
+  attack: {
+    agent_falls: {the_patient: 0, the_agent: 34, it: 12, zero: 41, },
+    patient_falls: {the_agent: 0, the_patient: 58, it: 8, zero: 1, },
+  },
+  throw_rock: {
+    agent_falls: {the_patient: 0, the_agent: 78, it: 9, zero: 7, },
+    patient_falls: {the_agent: 0, the_patient: 72, it: 5, zero: 1, },
+  },
+  overall: {
+    agent_falls: {the_patient: 0, the_agent: 180, it: 54, zero: 123, },
+    patient_falls: {the_agent: 0, the_patient: 285, it: 17, zero: 6, }
+  }
+}
+
+//json.write('prod_data_no_training_rest.json', prod_data_no_training_rest);
+
+
+var prod_data_training = {
+  jump_over: {
+    agent_falls: {the_patient: 0, the_agent: 51, it: 12, zero: 36, },
+    patient_falls: {the_agent: 0, the_patient: 92, it: 0, zero: 1, },
+  },
+  wave: {
+    agent_falls: {the_patient: 0, the_agent: 52, it: 17, zero: 31, },
+    patient_falls: {the_agent: 0, the_patient: 90, it: 2, zero: 3, },
+  },
+  attack: {
+    agent_falls: {the_patient: 0, the_agent: 41, it: 7, zero: 17, },
+    patient_falls: {the_agent: 0, the_patient: 46, it: 4, zero: 1, },
+  },
+  throw_rock: {
+    agent_falls: {the_patient: 0, the_agent: 87, it: 8, zero: 10, },
+    patient_falls: {the_agent: 0, the_patient: 86, it: 5, zero: 0, },
+  },
+  overall: {
+    agent_falls: {the_patient: 0, the_agent: 231, it: 44, zero: 94, },
+    patient_falls: {the_agent: 0, the_patient: 314, it: 11, zero: 5, }
+  }
+}
+
+//json.write('prod_data_training.json', prod_data_training);
+
+
+var prod_data_training_familiar = {
+  jump_over: {
+    agent_falls: {the_patient: 0, the_agent: 10, it: 4, zero: 17, },
+    patient_falls: {the_agent: 0, the_patient: 28, it: 0, zero: 0, },
+  },
+  wave: {
+    agent_falls: {the_patient: 0, the_agent: 11, it: 6, zero: 13, },
+    patient_falls: {the_agent: 0, the_patient: 27, it: 1, zero: 1, },
+  },
+  attack: {
+    agent_falls: {the_patient: 0, the_agent: 9, it: 3, zero: 7, },
+    patient_falls: {the_agent: 0, the_patient: 11, it: 4, zero: 0, },
+  },
+  throw_rock: {
+    agent_falls: {the_patient: 0, the_agent: 24, it: 2, zero: 7, },
+    patient_falls: {the_agent: 0, the_patient: 25, it: 2, zero: 0, },
+  },
+  overall: {
+    agent_falls: {the_patient: 0, the_agent: 54, it: 15, zero: 44, },
+    patient_falls: {the_agent: 0, the_patient: 91, it: 7, zero: 1, }
+  }
+}
+
+//json.write('prod_data_training_familiar.json', prod_data_training_familiar);
+
+
+var prod_data_training_surprising = {
+  jump_over: {
+    agent_falls: {the_patient: 0, the_agent: 21, it: 4, zero: 7, },
+    patient_falls: {the_agent: 0, the_patient: 30, it: 0, zero: 0, },
+  },
+  wave: {
+    agent_falls: {the_patient: 0, the_agent: 21, it: 6, zero: 8, },
+    patient_falls: {the_agent: 0, the_patient: 31, it: 0, zero: 2, },
+  },
+  attack: {
+    agent_falls: {the_patient: 0, the_agent: 15, it: 3, zero: 5, },
+    patient_falls: {the_agent: 0, the_patient: 16, it: 0, zero: 0, },
+  },
+  throw_rock: {
+    agent_falls: {the_patient: 0, the_agent: 33, it: 3, zero: 1, },
+    patient_falls: {the_agent: 0, the_patient: 30, it: 2, zero: 0, },
+  },
+  overall: {
+    agent_falls: {the_patient: 0, the_agent: 90, it: 16, zero: 21, },
+    patient_falls: {the_agent: 0, the_patient: 107, it: 2, zero: 2, }
+  }
+}
+
+//json.write('prod_data_training_surprising.json', prod_data_training_surprising);
+
+
+var prod_data_training_postsurprising = {
+  jump_over: {
+    agent_falls: {the_patient: 0, the_agent: 20, it: 4, zero: 12, },
+    patient_falls: {the_agent: 0, the_patient: 34, it: 0, zero: 1, },
+  },
+  wave: {
+    agent_falls: {the_patient: 0, the_agent: 20, it: 5, zero: 10, },
+    patient_falls: {the_agent: 0, the_patient: 32, it: 1, zero: 0, },
+  },
+  attack: {
+    agent_falls: {the_patient: 0, the_agent: 17, it: 1, zero: 5, },
+    patient_falls: {the_agent: 0, the_patient: 19, it: 0, zero: 1, },
+  },
+  throw_rock: {
+    agent_falls: {the_patient: 0, the_agent: 30, it: 3, zero: 2, },
+    patient_falls: {the_agent: 0, the_patient: 31, it: 1, zero: 0, },
+  },
+  overall: {
+    agent_falls: {the_patient: 0, the_agent: 87, it: 13, zero: 29, },
+    patient_falls: {the_agent: 0, the_patient: 116, it: 2, zero: 2, }
+  }
+}
+
+//json.write('prod_data_training_postsurprising.json', prod_data_training_postsurprising);
+
+
+var perc_data_clean = {
+  jump_over: {
+    it: {agent_falls: 22, patient_falls: 20, },
+    zero: {agent_falls: 50, patient_falls: 0, },
+  },
+  wave: {
+    it: {agent_falls: 16, patient_falls: 22, },
+    zero: {agent_falls: 47, patient_falls: 7, },
+  },
+  attack: {
+    it: {agent_falls: 17, patient_falls: 33, },
+    zero: {agent_falls: 41, patient_falls: 1, },
+  },
+  throw_rock: {
+    it: {agent_falls: 10, patient_falls: 34, },
+    zero: {agent_falls: 38, patient_falls: 8, },
+  },
+  overall: {
+    it: {agent_falls: 65, patient_falls: 109, },
+    zero: {agent_falls: 176, patient_falls: 16, }
+  }
+}
+
+//json.write('perc_data_clean.json', perc_data_clean);
+
+
+var perc_data_noise = {
+  jump_over: {
+    it: {agent_falls: 60, patient_falls: 10, },
+    zero: {agent_falls: 97, patient_falls: 4, },
+  },
+  wave: {
+    it: {agent_falls: 49, patient_falls: 22, },
+    zero: {agent_falls: 75, patient_falls: 8, },
+  },
+  attack: {
+    it: {agent_falls: 56, patient_falls: 33, },
+    zero: {agent_falls: 74, patient_falls: 10, },
+  },
+  throw_rock: {
+    it: {agent_falls: 34, patient_falls: 35, },
+    zero: {agent_falls: 78, patient_falls: 17, },
+  },
+  overall: {
+    it: {agent_falls: 199, patient_falls: 100, },
+    zero: {agent_falls: 324, patient_falls: 39, }
+  }
+}
+
+//json.write('perc_data_noise.json', perc_data_noise);
+
+
+var perc_data_low_noise = {
+  jump_over: {
+    it: {agent_falls: 29, patient_falls: 6, },
+    zero: {agent_falls: 52, patient_falls: 0, },
+  },
+  wave: {
+    it: {agent_falls: 25, patient_falls: 10, },
+    zero: {agent_falls: 44, patient_falls: 4, },
+  },
+  attack: {
+    it: {agent_falls: 33, patient_falls: 21, },
+    zero: {agent_falls: 42, patient_falls: 6, },
+  },
+  throw_rock: {
+    it: {agent_falls: 16, patient_falls: 20, },
+    zero: {agent_falls: 46, patient_falls: 6, },
+  },
+  overall: {
+    it: {agent_falls: 103, patient_falls: 57, },
+    zero: {agent_falls: 184, patient_falls: 16, }
+  }
+}
+
+//json.write('perc_data_low_noise.json', perc_data_low_noise);
+
+
+var perc_data_high_noise = {
+  jump_over: {
+    it: {agent_falls: 31, patient_falls: 4, },
+    zero: {agent_falls: 45, patient_falls: 4, },
+  },
+  wave: {
+    it: {agent_falls: 24, patient_falls: 12, },
+    zero: {agent_falls: 31, patient_falls: 4, },
+  },
+  attack: {
+    it: {agent_falls: 23, patient_falls: 12, },
+    zero: {agent_falls: 32, patient_falls: 4, },
+  },
+  throw_rock: {
+    it: {agent_falls: 18, patient_falls: 15, },
+    zero: {agent_falls: 32, patient_falls: 11, },
+  },
+  overall: {
+    it: {agent_falls: 96, patient_falls: 43, },
+    zero: {agent_falls: 140, patient_falls: 23, }
+  }
+}
+
+//json.write('perc_data_high_noise.json', perc_data_high_noise);
+
+
+var perc_data_clean_heard = {
+  jump_over: {
+    it: {agent_falls: 15, patient_falls: 20, },
+    zero: {agent_falls: 57, patient_falls: 0, },
+  },
+  wave: {
+    it: {agent_falls: 9, patient_falls: 23, },
+    zero: {agent_falls: 54, patient_falls: 6, },
+  },
+  attack: {
+    it: {agent_falls: 12, patient_falls: 31, },
+    zero: {agent_falls: 46, patient_falls: 3, },
+  },
+  throw_rock: {
+    it: {agent_falls: 9, patient_falls: 34, },
+    zero: {agent_falls: 39, patient_falls: 8, },
+  },
+  overall: {
+    it: {agent_falls: 45, patient_falls: 108, },
+    zero: {agent_falls: 196, patient_falls: 17, }
+  }
+}
+
+//json.write('perc_data_clean_heard.json', perc_data_clean_heard);
+
+
+var perc_data_noise_heard = {
+  jump_over: {
+    it: {agent_falls: 10, patient_falls: 8, },
+    zero: {agent_falls: 147, patient_falls: 6, },
+  },
+  wave: {
+    it: {agent_falls: 17, patient_falls: 19, },
+    zero: {agent_falls: 107, patient_falls: 11, },
+  },
+  attack: {
+    it: {agent_falls: 11, patient_falls: 30, },
+    zero: {agent_falls: 119, patient_falls: 13, },
+  },
+  throw_rock: {
+    it: {agent_falls: 6, patient_falls: 38, },
+    zero: {agent_falls: 106, patient_falls: 14, },
+  },
+  overall: {
+    it: {agent_falls: 44, patient_falls: 95, },
+    zero: {agent_falls: 479, patient_falls: 44, }
+  }
+}
+
+//json.write('perc_data_noise_heard.json', perc_data_noise_heard);
+
+
+var perc_data_low_noise_heard = {
+  jump_over: {
+    it: {agent_falls: 7, patient_falls: 4, },
+    zero: {agent_falls: 74, patient_falls: 2, },
+  },
+  wave: {
+    it: {agent_falls: 7, patient_falls: 7, },
+    zero: {agent_falls: 62, patient_falls: 7, },
+  },
+  attack: {
+    it: {agent_falls: 6, patient_falls: 19, },
+    zero: {agent_falls: 69, patient_falls: 8, },
+  },
+  throw_rock: {
+    it: {agent_falls: 3, patient_falls: 22, },
+    zero: {agent_falls: 59, patient_falls: 4, },
+  },
+  overall: {
+    it: {agent_falls: 23, patient_falls: 52, },
+    zero: {agent_falls: 264, patient_falls: 21, }
+  }
+}
+
+//json.write('perc_data_low_noise_heard.json', perc_data_low_noise_heard);
+
+
+var perc_data_high_noise_heard = {
+  jump_over: {
+    it: {agent_falls: 3, patient_falls: 4, },
+    zero: {agent_falls: 73, patient_falls: 4, },
+  },
+  wave: {
+    it: {agent_falls: 10, patient_falls: 12, },
+    zero: {agent_falls: 45, patient_falls: 4, },
+  },
+  attack: {
+    it: {agent_falls: 5, patient_falls: 11, },
+    zero: {agent_falls: 50, patient_falls: 5, },
+  },
+  throw_rock: {
+    it: {agent_falls: 3, patient_falls: 16, },
+    zero: {agent_falls: 47, patient_falls: 10, },
+  },
+  overall: {
+    it: {agent_falls: 21, patient_falls: 43, },
+    zero: {agent_falls: 215, patient_falls: 23, }
+  }
+}
+
+//json.write('perc_data_high_noise_heard.json', perc_data_high_noise_heard);
