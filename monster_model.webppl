@@ -659,7 +659,7 @@ var modelMainExps = function(fitting_params, fixed_params)
     fitting_params.actions
   )
 
-  var speaker_experiments = fitting_params.speaker === null ? [] : speaker_training.concat(speaker_familiar.concat(speaker_surprising.concat(speaker_postsurprising.concat(speaker_no_training))))
+  var speaker_experiments = speaker_familiar //fitting_params.speaker === null ? [] : speaker_training.concat(speaker_familiar.concat(speaker_surprising.concat(speaker_postsurprising.concat(speaker_no_training))))
 
   var listener_clean = map
   (
@@ -834,16 +834,16 @@ var estimateAndSample = function(model_generator, fitting_params, fixed_params, 
   //viz(parameter_estimation)
   //viz.marginals(parameter_estimation)
 
-  print("var params = {")
+  var params_array = []
+
   map(
     function(param)
     {
       if (param != 'samples')
-        print("  " + param + ": " + expectation(marginalize(parameter_estimation, param)) + ",")
+        params_array.push([param, expectation(marginalize(parameter_estimation, param))])
     },
     _.keys(parameter_estimation.samples[0].value)
   )
-  print("}")
 
   if (to_sample)
   {
@@ -851,6 +851,8 @@ var estimateAndSample = function(model_generator, fitting_params, fixed_params, 
     json.write(filename, samples.slice(burn_samples))
     print("sample saved")
   }
+
+  return Object.fromEntries(params_array)
 }
 
 var modelScoreSample = function(model_generator, fitting_params, fixed_params)
@@ -994,18 +996,16 @@ var params = {
   certain_surp_it: 0.35347026169995244,
   certain_clean: 0.9261269532590238,
   certain_clean_it: 0.8972801630556927,
-  //certain_zero: 0.20279241267664605,
-  //certain_it: 0.9587267074671542,
   certain_low: 0.3404147472030492,
   certain_low_it: 0.9629816452619403,
   certain_high: 0.20279241267664605,
   certain_high_it: 0.9587267074671542,
   salience_prior: 0.5,
-  agent_bias: 0.6636670078911818,
+  //agent_bias: 0.6636670078911818,
+  agent_bias: 0.72,
   subject_bias: 0.5,
   np_cost: 0.19495783426319335,
-  //pro_cost: 0.3018716692506994,
-  pro_cost: 0,
+  pro_cost: 0.3018716692506994,
   jump_over_prior: 0.4591269994120075,
   wave_prior: 0.583068864688124,
   attack_prior: 0.6485896225557346,
@@ -1014,8 +1014,10 @@ var params = {
   train_prior: 0.5917441120431489,
   revision_prior: 0.36410839507593395,
 }
+//json.write("params.json", params)
 
-//estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, params, 25000, true, "sample0.json")
+var params = estimateAndSample(modelMainExps, {speaker: speaker1, listener: null, actions: actions, cost: 'both'}, {}, 25000, true, "sample0.json")
+json.write("params.json", params)
 //estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener1, actions: actions, cost: 'both'}, {}, 25000, true, "sample1.json")
 //estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener2, actions: actions, cost: 'both'}, {}, 25000, true, "sample2.json")
 //estimateAndSample(modelMainExps, {actions: actions, cost: 'np'}, {}, speaker, listener, 20000, true, "sample2.json")
@@ -1050,3 +1052,5 @@ print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, pragmaticSpe
 */
 
 //print(sample(DiscreteBeta(0.5451610, 0.6961924)))
+
+//Object.fromEntries([["a", 1]]);
