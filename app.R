@@ -16,8 +16,8 @@ source("rsa.R")
 listener = listener0
 speaker = speaker1
 
-#params = read_json("params.json")
-params = read_json("optimal_params.json")
+#default_params = read_json("params.json")
+default_params = read_json("optimal_params.json")
 
 
 # Define UI for application that draws a histogram
@@ -62,32 +62,32 @@ ui <- page_fillable(
             layout_columns(
             card(
                 card_header("Action priors"),
-                sliderInput("jump_over_prior", "Jump over:", min = 0, max = 1.0, ticks = FALSE, value = params$jump_over_prior),
-                sliderInput("wave_prior", "Wave:", min = 0, max = 1.0, ticks = FALSE, value = params$wave_prior),
-                sliderInput("attack_prior", "Attack:", min = 0, max = 1.0, ticks = FALSE, value = params$attack_prior),
-                sliderInput("throw_rock_prior", "Throw a rock:", min = 0, max = 1.0, ticks = FALSE, value = params$throw_rock_prior)
+                sliderInput("jump_over_prior", "Jump over:", min = 0, max = 1.0, ticks = FALSE, value = default_params$jump_over_prior),
+                sliderInput("wave_prior", "Wave:", min = 0, max = 1.0, ticks = FALSE, value = default_params$wave_prior),
+                sliderInput("attack_prior", "Attack:", min = 0, max = 1.0, ticks = FALSE, value = default_params$attack_prior),
+                sliderInput("throw_rock_prior", "Throw a rock:", min = 0, max = 1.0, ticks = FALSE, value = default_params$throw_rock_prior)
             ),
             card(
                 card_header("Utterance cost"),
-                sliderInput("np_cost", "Noun phrase cost:", min = 0, max = 1, step = 0.01, ticks = FALSE, value = params$np_cost),
-                sliderInput("pro_cost", "Pronoun cost:", min = 0, max = 1, step = 0.01, ticks = FALSE, value = params$pro_cost)
+                sliderInput("np_cost", "Noun phrase cost:", min = 0, max = 1, step = 0.01, ticks = FALSE, value = default_params$np_cost),
+                sliderInput("pro_cost", "Pronoun cost:", min = 0, max = 1, step = 0.01, ticks = FALSE, value = default_params$pro_cost)
             ),
             col_widths = c(10, 10)),
             layout_columns(
             card(
                 card_header("Training priors"),
-                sliderInput("train_prior", "Familiar vs surprising:", min = 0, max = 1.0, ticks = FALSE, value = params$train_prior),
-                sliderInput("revision_prior", "Post-surprising:", min = 0, max = 1.0, ticks = FALSE, value = params$revision_prior)
+                sliderInput("train_prior", "Familiar vs surprising:", min = 0, max = 1.0, ticks = FALSE, value = default_params$train_prior),
+                sliderInput("revision_prior", "Post-surprising:", min = 0, max = 1.0, ticks = FALSE, value = default_params$revision_prior)
             ),
             card(
                 card_header("Antecedent position"),
-                sliderInput("salience_prior", "Salience prior:", min = 0, max = 1.0, ticks = FALSE, value = params$salience_prior),
-                sliderInput("agent_bias", "Prior for patient only:", min = 0, max = 1.0, ticks = FALSE, value = params$agent_bias),
-                sliderInput("subject_bias", "Subject bias:", min = 0, max = 1.0, ticks = FALSE, value = params$subject_bias)
+                sliderInput("salience_prior", "Salience prior:", min = 0, max = 1.0, ticks = FALSE, value = default_params$salience_prior),
+                sliderInput("agent_bias", "Prior for patient only:", min = 0, max = 1.0, ticks = FALSE, value = default_params$agent_bias),
+                sliderInput("subject_bias", "Subject bias:", min = 0, max = 1.0, ticks = FALSE, value = default_params$subject_bias)
             ),
             card(
                 card_header("Speaker rationality"),
-                sliderInput("alpha", "Alpha:", min = 0, max = 10, step = 0.1, ticks = FALSE, value = params$alpha)
+                sliderInput("alpha", "Alpha:", min = 0, max = 10, step = 0.1, ticks = FALSE, value = default_params$alpha)
             ),
             col_widths = c(10, 10, 10)
             )),
@@ -96,8 +96,8 @@ ui <- page_fillable(
                 tooltip(
                     card(
                         card_header("Speaker assumed noise"),
-                        sliderInput("error_zero", "Zeros heard as pronoun:", min = 0, max = 1, ticks = FALSE, value = 1 - params$certain_zero),
-                        sliderInput("error_it", "Pronouns heard as zero:", min = 0, max = 1, ticks = FALSE, value = 1 - params$certain_it)
+                        sliderInput("error_zero", "Zeros heard as pronoun:", min = 0, max = 1, ticks = FALSE, value = 1 - default_params$certain_zero),
+                        sliderInput("error_it", "Pronouns heard as zero:", min = 0, max = 1, ticks = FALSE, value = 1 - default_params$certain_it)
                     ),
                     "Test message",
                     id = "error_tooltip"
@@ -105,8 +105,8 @@ ui <- page_fillable(
                 tooltip(
                     card(
                         card_header("No noise condition"),
-                        sliderInput("error_clean", "Zeros heard as pronoun:", min = 0, max = 1, ticks = FALSE, value = 1 - params$certain_clean),
-                        sliderInput("error_clean_it", "Pronouns heard as zero:", min = 0, max = 1, ticks = FALSE, value = 1 - params$certain_clean_it)
+                        sliderInput("error_clean", "Zeros heard as pronoun:", min = 0, max = 1, ticks = FALSE, value = 1 - default_params$certain_clean),
+                        sliderInput("error_clean_it", "Pronouns heard as zero:", min = 0, max = 1, ticks = FALSE, value = 1 - default_params$certain_clean_it)
                     ),
                     "Test message",
                     id = "error_clean_tooltip"
@@ -117,8 +117,8 @@ ui <- page_fillable(
                 tooltip(
                     card(
                         card_header("Low noise condition"),
-                        sliderInput("error_low", "Zeros heard as pronoun:", min = 0, max = 1, ticks = FALSE, value = 1 - params$certain_low),
-                        sliderInput("error_low_it", "Pronouns heard as zero:", min = 0, max = 1, ticks = FALSE, value = 1 - params$certain_low_it)
+                        sliderInput("error_low", "Zeros heard as pronoun:", min = 0, max = 1, ticks = FALSE, value = 1 - default_params$certain_low),
+                        sliderInput("error_low_it", "Pronouns heard as zero:", min = 0, max = 1, ticks = FALSE, value = 1 - default_params$certain_low_it)
                     ),
                     "Test message",
                     id = "error_low_tooltip"
@@ -126,8 +126,8 @@ ui <- page_fillable(
                 tooltip(
                     card(
                         card_header("High noise condition"),
-                        sliderInput("error_high", "Zeros heard as pronoun:", min = 0, max = 1, ticks = FALSE, value = 1 - params$certain_high),
-                        sliderInput("error_high_it", "Pronouns heard as zero:", min = 0, max = 1, ticks = FALSE, value = 1 - params$certain_high_it)
+                        sliderInput("error_high", "Zeros heard as pronoun:", min = 0, max = 1, ticks = FALSE, value = 1 - default_params$certain_high),
+                        sliderInput("error_high_it", "Pronouns heard as zero:", min = 0, max = 1, ticks = FALSE, value = 1 - default_params$certain_high_it)
                     ),
                     "Test message",
                     id = "error_high_tooltip"
@@ -179,26 +179,26 @@ server <- function(input, output, session) {
     
     observeEvent(input$reset,
     {
-        updateSliderInput(session, "alpha", value = alpha)
-        updateSliderInput(session, "jump_over_prior", value = action_priors$jump_over)
-        updateSliderInput(session, "wave_prior", value = action_priors$wave)
-        updateSliderInput(session, "attack_prior", value = action_priors$attack)
-        updateSliderInput(session, "throw_rock_prior", value = action_priors$throw_rock)
-        updateSliderInput(session, "salience_prior", value = salience_prior)
-        updateSliderInput(session, "agent_bias", value = agent_bias)
-        updateSliderInput(session, "subject_bias", value = subject_bias)
-        updateSliderInput(session, "train_prior", value = train_prior)
-        updateSliderInput(session, "revision_prior", value = revision_prior)
-        updateSliderInput(session, "np_cost", value = np_cost)
-        updateSliderInput(session, "pro_cost", value = pro_cost)
-        updateSliderInput(session, "error_zero", value = error_zero)
-        updateSliderInput(session, "error_it", value = error_it)
-        updateSliderInput(session, "error_low", value = error_low_zero)
-        updateSliderInput(session, "error_low_it", value = error_low_it)
-        updateSliderInput(session, "error_high", value = error_high_zero)
-        updateSliderInput(session, "error_high_it", value = error_high_it)
-        updateSliderInput(session, "error_clean", value = error_clean_zero)
-        updateSliderInput(session, "error_clean_it", value = error_clean_it)
+        updateSliderInput(session, "alpha", value = default_params$alpha)
+        updateSliderInput(session, "jump_over_prior", value = default_params$jump_over_prior)
+        updateSliderInput(session, "wave_prior", value = default_params$wave_prior)
+        updateSliderInput(session, "attack_prior", value = default_params$attack_prior)
+        updateSliderInput(session, "throw_rock_prior", value = default_params$throw_rock_prior)
+        updateSliderInput(session, "salience_prior", value = default_params$salience_prior)
+        updateSliderInput(session, "agent_bias", value = default_params$agent_bias)
+        updateSliderInput(session, "subject_bias", value = default_params$subject_bias)
+        updateSliderInput(session, "train_prior", value = default_params$train_prior)
+        updateSliderInput(session, "revision_prior", value = default_params$revision_prior)
+        updateSliderInput(session, "np_cost", value = default_params$np_cost)
+        updateSliderInput(session, "pro_cost", value = default_params$pro_cost)
+        updateSliderInput(session, "error_zero", value = 1 - default_params$certain_zero)
+        updateSliderInput(session, "error_it", value = 1 - default_params$certain_it)
+        updateSliderInput(session, "error_low", value = 1 - default_params$certain_low)
+        updateSliderInput(session, "error_low_it", value = 1 - default_params$certain_low_it)
+        updateSliderInput(session, "error_high", value = 1 - default_params$certain_high)
+        updateSliderInput(session, "error_high_it", value = 1 - default_params$certain_high_it)
+        updateSliderInput(session, "error_clean", value = 1 - default_params$certain_clean)
+        updateSliderInput(session, "error_clean_it", value = 1 - default_params$certain_clean_it)
     })
     
     prod_legend = reactive({input$prod_datasets[1] %||% "none"})
