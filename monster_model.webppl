@@ -659,7 +659,7 @@ var modelMainExps = function(fitting_params, fixed_params)
     fitting_params.actions
   )
 
-  var speaker_experiments = speaker_familiar //fitting_params.speaker === null ? [] : speaker_training.concat(speaker_familiar.concat(speaker_surprising.concat(speaker_postsurprising.concat(speaker_no_training))))
+  var speaker_experiments = fitting_params.speaker === null ? [] : speaker_training.concat(speaker_familiar.concat(speaker_surprising.concat(speaker_postsurprising.concat(speaker_no_training))))
 
   var listener_clean = map
   (
@@ -1016,8 +1016,9 @@ var params = {
 }
 //json.write("params.json", params)
 
-var params = estimateAndSample(modelMainExps, {speaker: speaker1, listener: null, actions: actions, cost: 'both'}, {}, 25000, true, "sample0.json")
+var params = estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, {}, 25000, true, "sample0.json")
 json.write("params.json", params)
+print(params)
 //estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener1, actions: actions, cost: 'both'}, {}, 25000, true, "sample1.json")
 //estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener2, actions: actions, cost: 'both'}, {}, 25000, true, "sample2.json")
 //estimateAndSample(modelMainExps, {actions: actions, cost: 'np'}, {}, speaker, listener, 20000, true, "sample2.json")
