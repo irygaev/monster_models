@@ -6,7 +6,7 @@ actions <- c('jump_over', 'wave', 'attack', 'throw_rock')
 states <- c('agent_falls', 'patient_falls')
 utterances <- c('np', 'pro', 'zero')
 
-filename = "sample1.json"
+filename = "sample0.json"
 
 
 speaker_data1 = readSpeakerData(filename, 1)
@@ -18,11 +18,11 @@ drawSpeakerDist(speaker_data2)
 drawSpeaker(speaker_data2, "prod_data_training_surprising.csv")
 
 speaker_data3 = readSpeakerData(filename, 3)
-drawSpeakerDist(speaker_data3)
+#drawSpeakerDist(speaker_data3)
 drawSpeaker(speaker_data3, "prod_data_training_postsurprising.csv")
 
 speaker_data4 = readSpeakerData(filename, 4)
-drawSpeakerDist(speaker_data4)
+#drawSpeakerDist(speaker_data4)
 drawSpeaker(speaker_data4, "prod_data_no_training_rest.csv")
 
 

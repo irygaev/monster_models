@@ -73,10 +73,10 @@ var cost = function(utterance, params) {
 
 var utterancePriors = function(state, params)
 {
-  var utt_probs = map(function(utterance) {return Math.exp(-params.alpha * cost(utterance, params))}, utterances)
+  var utt_probs = map(function(utterance) {return Math.exp(-cost(utterance, params))}, utterances)
   
-  var subj_bias = map2(function(x, y) {return x * y}, [1 - params.subject_bias, 1 - params.subject_bias, params.subject_bias, params.subject_bias], utt_probs)
-  var obj_bias = map2(function(x, y) {return x * y}, [params.subject_bias, params.subject_bias, 1 - params.subject_bias, 1 - params.subject_bias], utt_probs)
+  var subj_bias = map2(function(x, y) {return x * y}, [params.np_bias, params.np_bias, 1 - params.np_bias, 1 - params.np_bias], utt_probs)
+  var obj_bias = map2(function(x, y) {return x * y}, [params.np_bias2, params.np_bias2, 1 - params.np_bias2, 1 - params.np_bias2], utt_probs)
 
   return state == "agent_falls" ? (subj_bias) :
          state == "patient_falls" ? (obj_bias) : 
@@ -188,16 +188,10 @@ var actionPrior = function(action, action_prior)
 
 var statePrior = function(params)
 {
-  //print(params.action)
-  //print(params.action_prior)
   var p1 = actionPrior(params.action, params.action_prior)
+
   var p2 = 1 - params.salience_prior
-  /*var p3 =
-      params.event_type == 'familiar' ?
-        state == "patient_falls" ? params.train_prior : 1 - params.train_prior :
-      params.event_type == 'surprising' ?
-        state == "patient_falls" ? 1 - params.train_prior : params.train_prior :
-      0.5*/
+
   var p3 =
     params.event_type == "postsurprising" ?
       params.patient_color == 'blue' ? params.revision_prior :
@@ -206,7 +200,6 @@ var statePrior = function(params)
     params.patient_color == 'blue' ? params.train_prior :
     params.patient_color == 'red' ? 1 - params.train_prior :
     0.5
-  //var p3 = params.event_type == 'surprising' ? params.train_prior : 0.5
   
   return p1 * p2 * p3 / (p1 * p2 * p3 + (1 - p1) * (1 - p2) * (1 - p3)) // patient falling probability
 }
@@ -297,7 +290,9 @@ var speakerN = function(n, state, params)
   }
   else
   {
-    var salience_prior = (state == 'agent_falls' ? params.salience_prior : params.agent_bias)
+    var salience_prior = (state == 'agent_falls' || params.agent_bias == -1 ? params.salience_prior : params.agent_bias)
+    var action_prior = (state == 'agent_falls' || params.replacement_prior == -1 ? params.action_prior : 1 - params.replacement_prior)
+    //var action_prior = (state == 'agent_falls' ? params.action_prior : params.action_prior * params.replacement_prior)
 
     var patient_color =
       (params.event_type == "familiar")   ? (state == 'patient_falls') ? ('blue') : ('red') :
@@ -305,7 +300,8 @@ var speakerN = function(n, state, params)
       (params.event_type == "postsurprising") ? (state == 'patient_falls') ? ('blue') : ('red'):
       ('yellow')
 
-    var listener_params = Object.assign({}, params, {salience_prior: salience_prior, patient_color: patient_color})
+    //var listener_params = Object.assign({}, params, {salience_prior: salience_prior, patient_color: patient_color})
+    var listener_params = Object.assign({}, params, {action_prior: action_prior, salience_prior: salience_prior, patient_color: patient_color})
 
     Infer({model: function()
     {
@@ -446,10 +442,11 @@ var modelMainExps = function(fitting_params, fixed_params)
   var alpha = uniform({a:1, b:10});
   var alpha_familiar = alpha//uniform({a:1, b:10});
   var alpha_surprising = alpha//uniform({a:1, b:10});
+  var alpha_postsurprising = alpha//uniform({a:1, b:10});
   var alpha_neutral = alpha//uniform({a:1, b:10});
 
   var np_cost = (fitting_params.cost == "np" || fitting_params.cost == "both") ? uniform({a:0, b:1}) : (0)
-  var pro_cost = (fitting_params.cost == "pro" || fitting_params.cost == "both") ? uniform({a:0, b:1}) : (0)
+  var pro_cost = (fitting_params.cost == "pro" || fitting_params.cost == "both") ? uniform({a:0, b:np_cost}) : (0)
 
   var certain_zero = uniform({a:0, b:1});
   var certain_it = uniform({a:0, b:1})
@@ -464,8 +461,10 @@ var modelMainExps = function(fitting_params, fixed_params)
   var certain_high_it = uniform({a:0, b:1})
 
   var salience_prior = 0.5//uniform({a:0, b:1})
-  var agent_bias = uniform({a:0.6, b:1})
-  var subject_bias = 0.5//uniform({a:0.6, b:1})
+  var replacement_prior = uniform({a:0, b:1})
+  var agent_bias = -1//uniform({a:0, b:1})
+  var np_bias = 0.5//uniform({a:0, b:1})
+  var np_bias2 = 0.5//uniform({a:0, b:1})
   
   var jump_over_prior = uniform({a:0, b:1})
   var wave_prior = uniform({a:0, b:1})
@@ -480,6 +479,7 @@ var modelMainExps = function(fitting_params, fixed_params)
       alpha: alpha,
       alpha_familiar: alpha_familiar,
       alpha_surprising: alpha_surprising,
+      alpha_postsurprising: alpha_postsurprising,
       alpha_neutral: alpha_neutral,
       certain_zero: certain_zero,
       certain_it: certain_it,
@@ -492,8 +492,10 @@ var modelMainExps = function(fitting_params, fixed_params)
       certain_high: certain_high,
       certain_high_it: certain_high_it,
       salience_prior: salience_prior,
+      replacement_prior: replacement_prior,
       agent_bias: agent_bias,
-      subject_bias: subject_bias,
+      np_bias: np_bias,
+      np_bias2: np_bias2,
       np_cost: np_cost,
       pro_cost: pro_cost,
       jump_over_prior: jump_over_prior,
@@ -523,11 +525,13 @@ var modelMainExps = function(fitting_params, fixed_params)
           certain_zero: params.certain_zero,
           certain_it: params.certain_it,
           salience_prior: params.salience_prior,
-          agent_bias: agent_bias,
-          subject_bias: subject_bias,
+          replacement_prior: params.replacement_prior,
+          agent_bias: params.agent_bias,
+          np_bias: params.np_bias,
+          np_bias2: params.np_bias2,
           action_prior: local_action_priors[action],
           train_prior: params.train_prior,
-          revision_prior: revision_prior,
+          revision_prior: params.revision_prior,
           np_cost: params.np_cost,
           pro_cost: params.pro_cost
         },
@@ -548,15 +552,17 @@ var modelMainExps = function(fitting_params, fixed_params)
         params: {
           event_type: "familiar",
           action: action,
-          alpha: params.alpha_familiar,
+          alpha: params.alpha,
           certain_zero: params.certain_zero,
           certain_it: params.certain_it,
           salience_prior: params.salience_prior,
-          agent_bias: agent_bias,
-          subject_bias: subject_bias,
+          replacement_prior: params.replacement_prior,
+          agent_bias: params.agent_bias,
+          np_bias: params.np_bias,
+          np_bias2: params.np_bias2,
           action_prior: local_action_priors[action],
           train_prior: params.train_prior,
-          revision_prior: revision_prior,
+          revision_prior: params.revision_prior,
           np_cost: params.np_cost,
           pro_cost: params.pro_cost
         },
@@ -578,15 +584,17 @@ var modelMainExps = function(fitting_params, fixed_params)
         params: {
           event_type: "surprising",
           action: action,
-          alpha: params.alpha_surprising,
-          certain_zero: params.certain_surp,
-          certain_it: params.certain_surp_it,
+          alpha: params.alpha,
+          certain_zero: params.certain_zero,
+          certain_it: params.certain_it,
           salience_prior: params.salience_prior,
-          agent_bias: agent_bias,
-          subject_bias: subject_bias,
+          replacement_prior: params.replacement_prior,
+          agent_bias: params.agent_bias,
+          np_bias: params.np_bias,
+          np_bias2: params.np_bias2,
           action_prior: local_action_priors[action],
           train_prior: params.train_prior,
-          revision_prior: revision_prior,
+          revision_prior: params.revision_prior,
           np_cost: params.np_cost,
           pro_cost: params.pro_cost,
         },
@@ -608,15 +616,17 @@ var modelMainExps = function(fitting_params, fixed_params)
         params: {
           event_type: "postsurprising",
           action: action,
-          alpha: params.alpha_surprising,
-          certain_zero: params.certain_surp,
-          certain_it: params.certain_surp_it,
+          alpha: params.alpha,
+          certain_zero: params.certain_zero,
+          certain_it: params.certain_it,
           salience_prior: params.salience_prior,
-          agent_bias: agent_bias,
-          subject_bias: subject_bias,
+          replacement_prior: params.replacement_prior,
+          agent_bias: params.agent_bias,
+          np_bias: params.np_bias,
+          np_bias2: params.np_bias2,
           action_prior: local_action_priors[action],
           train_prior: params.train_prior,
-          revision_prior: revision_prior,
+          revision_prior: params.revision_prior,
           np_cost: params.np_cost,
           pro_cost: params.pro_cost,
         },
@@ -638,15 +648,17 @@ var modelMainExps = function(fitting_params, fixed_params)
         params: {
           event_type: "neutral",
           action: action,
-          alpha: params.alpha_neutral,
-          certain_zero: params.certain_surp,
-          certain_it: params.certain_surp_it,
+          alpha: params.alpha,
+          certain_zero: params.certain_zero,
+          certain_it: params.certain_it,
           salience_prior: params.salience_prior,
-          agent_bias: agent_bias,
-          subject_bias: subject_bias,
+          replacement_prior: params.replacement_prior,
+          agent_bias: params.agent_bias,
+          np_bias: params.np_bias,
+          np_bias2: params.np_bias2,
           action_prior: local_action_priors[action],
           train_prior: params.train_prior,
-          revision_prior: revision_prior,
+          revision_prior: params.revision_prior,
           np_cost: params.np_cost,
           pro_cost: params.pro_cost,
         },
@@ -674,11 +686,13 @@ var modelMainExps = function(fitting_params, fixed_params)
           certain_zero: params.certain_clean,
           certain_it: params.certain_clean_it,
           salience_prior: params.salience_prior,
-          agent_bias: agent_bias,
-          subject_bias: subject_bias,
+          replacement_prior: params.replacement_prior,
+          agent_bias: params.agent_bias,
+          np_bias: params.np_bias,
+          np_bias2: params.np_bias2,
           action_prior: local_action_priors[action],
           train_prior: params.train_prior,
-          revision_prior: revision_prior,
+          revision_prior: params.revision_prior,
           np_cost: params.np_cost,
           pro_cost: params.pro_cost
         },
@@ -703,11 +717,13 @@ var modelMainExps = function(fitting_params, fixed_params)
           certain_zero: params.certain_low,
           certain_it: params.certain_low_it,
           salience_prior: params.salience_prior,
-          agent_bias: agent_bias,
-          subject_bias: subject_bias,
+          replacement_prior: params.replacement_prior,
+          agent_bias: params.agent_bias,
+          np_bias: params.np_bias,
+          np_bias2: params.np_bias2,
           action_prior: local_action_priors[action],
           train_prior: params.train_prior,
-          revision_prior: revision_prior,
+          revision_prior: params.revision_prior,
           np_cost: params.np_cost,
           pro_cost: params.pro_cost
         },
@@ -732,11 +748,13 @@ var modelMainExps = function(fitting_params, fixed_params)
           certain_zero: params.certain_high,
           certain_it: params.certain_high_it,
           salience_prior: params.salience_prior,
-          agent_bias: agent_bias,
-          subject_bias: subject_bias,
+          replacement_prior: params.replacement_prior,
+          agent_bias: params.agent_bias,
+          np_bias: params.np_bias,
+          np_bias2: params.np_bias2,
           action_prior: local_action_priors[action],
           train_prior: params.train_prior,
-          revision_prior: revision_prior,
+          revision_prior: params.revision_prior,
           np_cost: params.np_cost,
           pro_cost: params.pro_cost
         },
@@ -823,7 +841,7 @@ var dataAnalysis = function(model_generator, fitting_params, fixed_params)
 
 var estimateAndSample = function(model_generator, fitting_params, fixed_params, n_samples, to_sample, filename)
 {
-  var burn_samples = 5000
+  var burn_samples = 10000
 
   var parameter_estimation = Infer({
     method: "MCMC",
@@ -881,7 +899,7 @@ var modelScoreSample = function(model_generator, fitting_params, fixed_params)
   var listener_score = sum(
     map(function(experiment){
       return sum(
-        map(function(u){
+        map(function(utterance){
 
           var listener = experiment.listener
 
@@ -1003,7 +1021,7 @@ var params = {
   salience_prior: 0.5,
   //agent_bias: 0.6636670078911818,
   agent_bias: 0.72,
-  subject_bias: 0.5,
+  np_bias: 0.5,
   np_cost: 0.19495783426319335,
   pro_cost: 0.3018716692506994,
   jump_over_prior: 0.4591269994120075,
@@ -1016,17 +1034,240 @@ var params = {
 }
 //json.write("params.json", params)
 
-var params = estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, {}, 25000, true, "sample0.json")
-json.write("params.json", params)
-print(params)
+
+var alpha = 3.1
+var certain_zero = 0.2
+var certain_it = 0.99
+
+var params = {
+  alpha: alpha,
+  alpha_familiar: alpha,
+  alpha_surprising: alpha,
+  alpha_neutral: alpha,
+  certain_zero: certain_zero,
+  certain_it: certain_it,
+  certain_surp: certain_zero,
+  certain_surp_it: certain_it,
+  certain_clean: 1,
+  certain_clean_it: 0.89,
+  certain_low: 0.1,
+  certain_low_it: 0.99,
+  certain_high: 0.05,
+  certain_high_it: 0.99,
+  salience_prior: 0.5,
+  replacement_prior: -1,
+  agent_bias: -1,
+  np_bias: 0.5,
+  np_bias2: 0.5,
+  np_cost: 0.6,
+  pro_cost: 0.5,
+  jump_over_prior: 0.43,
+  wave_prior: 0.53,
+  attack_prior: 0.59,
+  throw_rock_prior: 0.72,
+  train_prior: 0.59,
+  revision_prior: 0.38
+}
+
+var suffix = ''
+//var params = estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, {replacement_prior: -1}, 30000, true, "sample0" + suffix + ".json")
+//json.write("params" + suffix + ".json", params)
+//print(params)
+
+
 //estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener1, actions: actions, cost: 'both'}, {}, 25000, true, "sample1.json")
 //estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener2, actions: actions, cost: 'both'}, {}, 25000, true, "sample2.json")
 //estimateAndSample(modelMainExps, {actions: actions, cost: 'np'}, {}, speaker, listener, 20000, true, "sample2.json")
 //estimateAndSample(modelMainExps, {actions: actions, cost: 'np'}, {}, pragmaticSpeaker, literalListener, 20000, true, "sample2.json")
 
+
+//var params = json.read("params_no_salience.json")
+// 4.1542455328626675e-159
+
+//var params = json.read("params_salience.json")
+// 7.978366937247527e-90
+
+//var params = json.read("params_salience2.json")
+// 3.0468074158013212e-136
+
+//var params = json.read("params_speaker_biases.json")
+// 6.493057158361734e-89
+
+//var params = json.read("params_speaker_biases2.json")
+// 1.5299189959667791e-92
+
+//var params = json.read("params_patient_prior.json")
+// 5.59521924334111e-120
+
+//var params = json.read("params_patient_prior2.json")
+// 2.3185197042881406e-118
+
+//var params = json.read("params_replacement_prior.json")
+// 2.146583579582723e-89
+
+//var params = json.read("params_replacement_prior2.json")
+// 2.720660206606585e-85
+
+var gridSearch = function(params, param_list)
+{
+  //print(param_list)
+
+  var steps = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99]
+
+  var scores = map(
+    function(step)
+    {
+      var param = param_list[0]
+      var param_value = param.startsWith('alpha') || param == 'np_cost' || param == 'pro_cost' ? step / 10 : step / 100
+
+      var local_params = Object.assign({}, params, Object.fromEntries([[param, param_value]]))
+
+      if (param_list.length > 1)
+      {
+        return gridSearch(local_params, param_list.slice(1))
+      }
+      else
+      {
+        var score = modelScore(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, local_params, 1)
+        return {params: local_params, score: score}
+      }
+    },
+    steps
+  )
+
+  var best = reduce(function(x, acc) {return x.score > acc.score ? x : acc}, {params: {}, score: -1}, scores)
+
+  print(param_list[0] + ": " + best.params[param_list[0]])
+  print(best.score)
+  return best
+}
+
+var randomWalk = function(best, param_list, skip_param_list)
+{
+  var index = Math.floor(Math.random() * param_list.length)
+
+  //var probs = map(function(x) {return Math.pow(1000, -(Array.isArray(x) ? x.length : 1))}, param_list)
+  //var index = categorical(probs, Array.from(param_list.keys()))
+
+  var one_param_list = [param_list[index]]
+  var new_param_list = param_list.toSpliced(index, 1)
+
+  var result1 = gridSearch(best.params, Array.isArray(one_param_list[0]) ? one_param_list[0] : one_param_list)
+  var result = result1.score > best.score ? result1 : best
+  //print(result.score)
+
+  if (result1.score < best.score)
+  {
+    print(best.params[param_list[index]])
+    print(result1.params[param_list[index]])
+    print(best.params)
+  }
+  
+  var param_list = result1.score > best.score ? new_param_list.concat(skip_param_list): new_param_list
+  var skip_param_list = result1.score > best.score ? one_param_list : skip_param_list.concat(one_param_list)
+
+  if (param_list.length == 0)
+  {
+    return result
+  }
+  else
+  {
+    var result2 = randomWalk(result, param_list, skip_param_list)
+
+    if (best.score >= result2.score)
+      return best
+    else
+      return result2
+  }
+}
+
+var randomizeParams = function(params, param_list)
+{
+  var random_params = reduce
+  (
+    function(x, acc)
+    {
+      return Object.assign({}, acc, Object.fromEntries([[x, Math.floor(Math.random() * 98 + 1) / (x.startsWith('alpha') || x == 'np_cost' || x == 'pro_cost' ? 10 : 100)]]))
+    },
+    params,
+    param_list.flat(1)
+  )
+
+  var score = modelScore(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, random_params, 1)
+
+  if (score > 0)
+    return random_params
+  else
+    return randomizeParams(params, param_list)
+}
+
+var randomRandomWalk = function(params, param_list)
+{
+  var random_params = randomizeParams(params, param_list)
+  return randomWalk({params: random_params, score: 0}, param_list, [])
+}
+
+var params = {
+  replacement_prior: 0.92,
+  revision_prior: 0.11,
+  train_prior: 0.75,
+  throw_rock_prior: 0.7,
+  attack_prior: 0.58,
+  wave_prior: 0.47000000000000003,
+  jump_over_prior: 0.59,
+  certain_it: 0.1,
+  certain_zero: 0.39,
+  certain_clean_it: 0.98,
+  certain_clean: 0.22,
+  certain_high_it: 0.92,
+  certain_high: 0.43,
+  certain_low_it: 0.98,
+  certain_low: 0.21,
+  pro_cost: 0.4,
+  np_cost: 0.08,
+  alpha: 0.9
+}
+
+//print(gridSearch(params, ["np_cost"]))
+
+//print(randomWalk({params: params, score: 1.5536436872843192e-82}, ["certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "np_bias", "np_bias2"]))
+//print(randomRandomWalk({}, ["alpha", "np_cost", "pro_cost", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "replacement_prior"]))
+
+var params = {
+  replacement_prior: -1,
+  revision_prior: 0.5,
+  train_prior: 0.5,
+  throw_rock_prior: 0.5,
+  attack_prior: 0.5,
+  wave_prior: 0.5,
+  jump_over_prior: 0.5,
+  certain_it: 0.5,
+  certain_zero: 0.5,
+  certain_clean_it: 0.5,
+  certain_clean: 0.5,
+  certain_high_it: 0.5,
+  certain_high: 0.5,
+  certain_low_it: 0.5,
+  certain_low: 0.5,
+  pro_cost: 0,
+  np_cost: 0,
+  alpha: 1
+}
+
+
+console.log(randomWalk({params: params, score: -1}, ["alpha", "np_cost", "pro_cost", "train_prior", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "revision_prior", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], []))
+
+//json.write("params_manual.json", params)
+//var params = json.read("params.json")
+//print(modelScore(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, params, 1))
+
+//var params = json.read("params_patient_ratio.json")
+//print(modelScore(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, params, 1))
+// 3.572003329768533e-91
+
+//print(modelScore(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, params, 10))
+
 /*
-//print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, speaker, null, 5000))
-// 2.830913717775092e-35
 //print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, pragmaticSpeaker, null, 5000))
 // 1.8924541425448544e-37
 

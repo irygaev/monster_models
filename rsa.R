@@ -141,7 +141,7 @@ params <- list(
     action_prior = 0.5,
     salience_prior = 0.5,
     agent_bias = agent_bias,
-    subject_bias = 0.5,
+    np_bias = 0.5,
     train_prior = 0.6,
     revision_prior = 0.4,
     event_type = "neutral",
@@ -246,10 +246,11 @@ cost <- function(utterance, params){
 }
 
 utterancePriors <- function(state, params){
-    probs <- sapply(params$utterances, function(utterance) exp(-params$alpha * cost(utterance, params)), USE.NAMES = FALSE)
+    probs <- sapply(params$utterances, function(utterance) exp(-cost(utterance, params)), USE.NAMES = FALSE)
     
-    obj_bias <- c(params$subject_bias, params$subject_bias, 1 - params$subject_bias, 1 - params$subject_bias)
-    subj_bias <- 1 - obj_bias
+    subj_bias <- c(params$np_bias, params$np_bias, 1 - params$np_bias, 1 - params$np_bias)
+    obj_bias <- c(params$np_bias2, params$np_bias2, 1 - params$np_bias2, 1 - params$np_bias2)
+    #subj_bias <- 1 - obj_bias
 
     if(state == "agent_falls") probs <- probs * subj_bias
     else                       probs <- probs * obj_bias
@@ -263,7 +264,7 @@ utterancePriors <- function(state, params){
     return(dist)
 }
 
-#params$subject_bias = 0.5
+#params$np_bias = 0.5
 
 #utterancePriors("agent_falls", params)
 
@@ -368,7 +369,9 @@ speakerN <- function(n, state, params){
         dist = list()
         
         listener_params = params
-        listener_params$salience_prior = ifelse(state == "agent_falls", params$salience_prior, ifelse(params$salience_prior == 0.5, params$agent_bias, params$salience_prior))
+        listener_params$salience_prior = ifelse(state == "agent_falls" | params$agent_bias == 0.5, params$salience_prior, params$agent_bias)
+        listener_params$action_prior = ifelse(state == "agent_falls" | params$flat_patient == FALSE, params$action_prior, params$replacement_prior)
+        #listener_params$action_prior = ifelse(state == "agent_falls", params$action_prior, params$action_prior * params$replacement_prior)
         
         listener_params$patient_color =
             ifelse(params$event_type == "familiar", ifelse(state == 'patient_falls', 'blue', 'red'),
@@ -483,7 +486,8 @@ drawListenerDist <- function(dist, show_legend = FALSE, y_label = NULL) {
         geom_text(aes(label = ifelse(percent < 0.06, "", sprintf("%0.2f", percent))), vjust = 1.2, size = 5, colour = "black", position = "stack") +
         labs(x = "", y=y_label, fill="Interpretation:") +
         #scale_fill_grey(start = 0.8, end = 0.5) +
-        scale_fill_manual("Interpretation:", values = c("Agent" = "#FEFE62", "Patient" = "#0C7BDC")) +
+        #scale_fill_manual("Interpretation:", values = c("Agent" = "#FEFE62", "Patient" = "#0C7BDC")) +
+        scale_fill_brewer(palette = "Set3") +
         theme_bw() +
         theme(text = element_text(size = 14), legend.position = ifelse(show_legend, 'top', 'none'))
 }
@@ -508,7 +512,8 @@ drawSpeakerDist <- function(dist, show_legend = FALSE, y_label = NULL) {
         geom_text(aes(label = ifelse(percent < 0.06, "", sprintf("%0.2f", percent))), vjust = 1.2, size = 5, colour = "black", position = "stack") +
         #labs(x = "Actions", y="Production rate", fill="Utterance") +
         labs(x="", y=y_label, fill="Utterance:") +
-        scale_fill_manual("Utterance:", values = c("Noun phrase" = "#0C7BDC", "Pronoun" = "#E1BE6A", "Zero anaphor" = "#FEFE62")) +
+        scale_fill_brewer(palette = "Set3") +
+        #scale_fill_manual("Utterance:", values = c("Noun phrase" = "#0C7BDC", "Pronoun" = "#E1BE6A", "Zero anaphor" = "#FEFE62")) +
         #scale_fill_grey(start = 0.9, end = 0.5) +
         #scale_x_discrete(labels = c("familiar", "suprising", "post-surpr.")) +
         theme_bw() +
@@ -551,7 +556,8 @@ drawSpeakerGold <- function(gold_csv, show_legend = FALSE, y_label = NULL) {
         #labs(x = "Actions", y="Production rate", fill="Utterance") +
         labs(x="", y=y_label, fill="Utterance:") +
         #scale_fill_grey(start = 0.9, end = 0.5) +
-        scale_fill_manual("Utterance:", values = c("Noun phrase" = "#0C7BDC", "Pronoun" = "#E1BE6A", "Zero anaphor" = "#FEFE62")) +
+        #scale_fill_manual("Utterance:", values = c("Noun phrase" = "#0C7BDC", "Pronoun" = "#E1BE6A", "Zero anaphor" = "#FEFE62")) +
+        scale_fill_brewer(palette = "Set3") +
         theme_bw() +
         theme(text = element_text(size = 14), legend.position = ifelse(show_legend, 'top', 'none'))
 }
@@ -588,7 +594,8 @@ drawListenerGold <- function(gold_csv, show_legend = FALSE, y_label = NULL) {
         geom_text(aes(label = ifelse(percent < 0.06, "", sprintf("%0.2f", percent))), vjust = 1.2, size = 5, colour = "black", position = "stack") +
         labs(x = "", y=y_label, fill="Interpretation:") +
         #scale_fill_grey(start = 0.8, end = 0.5) +
-        scale_fill_manual("Interpretation:", values = c("Agent" = "#FEFE62", "Patient" = "#0C7BDC")) +
+        #scale_fill_manual("Interpretation:", values = c("Agent" = "#FEFE62", "Patient" = "#0C7BDC")) +
+        scale_fill_brewer(palette = "Set3") +
         theme_bw() +
         theme(text = element_text(size = 14), legend.position = ifelse(show_legend, 'top', 'none'))
     #ggsave("fig-perception.pdf", width = 4, height = 3.7, units = "in")
