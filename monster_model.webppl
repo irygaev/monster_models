@@ -439,52 +439,58 @@ var inversePragmaticSpeaker = speaker2
 
 var modelMainExps = function(fitting_params, fixed_params)
 {
-  var alpha = uniform({a:1, b:10});
-  var alpha_familiar = alpha//uniform({a:1, b:10});
-  var alpha_surprising = alpha//uniform({a:1, b:10});
-  var alpha_postsurprising = alpha//uniform({a:1, b:10});
-  var alpha_neutral = alpha//uniform({a:1, b:10});
+  var alpha = uniform({a:0, b:10});
 
+  // potantially different alphas for different production conditions, to be removed
+  //var alpha_familiar = alpha//uniform({a:1, b:10});
+  //var alpha_surprising = alpha//uniform({a:1, b:10});
+  //var alpha_postsurprising = alpha//uniform({a:1, b:10});
+  //var alpha_neutral = alpha//uniform({a:1, b:10});
+
+  // utterance costs in relation to zero anaphors
   var np_cost = (fitting_params.cost == "np" || fitting_params.cost == "both") ? uniform({a:0, b:1}) : (0)
-  var pro_cost = (fitting_params.cost == "pro" || fitting_params.cost == "both") ? uniform({a:0, b:np_cost}) : (0)
+  var pro_cost = (fitting_params.cost == "pro" || fitting_params.cost == "both") ? uniform({a:0, b:1}) : (0)
 
-  var certain_zero = uniform({a:0, b:1});
-  var certain_it = uniform({a:0, b:1})
-  var certain_surp = certain_zero//uniform({a:0, b:1})
-  var certain_surp_it = certain_it//uniform({a:0, b:1})
+  // listener noise
+  var certain_clean = (fitting_params.n_noise_levels < 1) ? 0.99 : uniform({a:0, b:1})
+  var certain_clean_it = (fitting_params.n_noise_levels < 1) ? 0.99 : uniform({a:0, b:1})
+  var certain_low = (fitting_params.n_noise_levels < 2) ? certain_clean : uniform({a:0, b:1})
+  var certain_low_it = (fitting_params.n_noise_levels < 2) ? certain_clean_it : uniform({a:0, b:1})
+  var certain_high = (fitting_params.n_noise_levels < 3) ? certain_low : uniform({a:0, b:1})
+  var certain_high_it = (fitting_params.n_noise_levels < 3) ? certain_low_it : uniform({a:0, b:1})
 
-  var certain_clean = uniform({a:0, b:1})
-  var certain_clean_it = uniform({a:0, b:1})
-  var certain_low = uniform({a:0, b:1})
-  var certain_low_it = uniform({a:0, b:1})
-  var certain_high = uniform({a:0, b:1})
-  var certain_high_it = uniform({a:0, b:1})
+  // speaker-assumed noise
+  var certain_zero = (fitting_params.n_noise_levels < 4) ? certain_low : uniform({a:0, b:1})
+  var certain_it = (fitting_params.n_noise_levels < 4) ? certain_low_it : uniform({a:0, b:1})
+  //var certain_surp = certain_zero//uniform({a:0, b:1}) // potentially different for surprising events, to be removed
+  //var certain_surp_it = certain_it//uniform({a:0, b:1})
 
-  var salience_prior = 0.5//uniform({a:0, b:1})
-  var replacement_prior = uniform({a:0, b:1})
-  var agent_bias = -1//uniform({a:0, b:1})
-  var np_bias = 0.5//uniform({a:0, b:1})
-  var np_bias2 = 0.5//uniform({a:0, b:1})
+  var salience_prior = 0.5//uniform({a:0, b:1}) // preference to refer to the agent
+  var replacement_prior = uniform({a:0, b:1}) // flat action prior for patient_falls state
+  var agent_bias = -1//uniform({a:0, b:1}) // something strange (replacement for salient prior for patient_falls state), to be removed
+  var np_bias = 0.5//uniform({a:0, b:1}) // speaker's preference to use NP to refer to the agent
+  var np_bias2 = 0.5//uniform({a:0, b:1}) // speaker's prefernece to use NP to refer to the patient
   
+  // action priors
   var jump_over_prior = uniform({a:0, b:1})
   var wave_prior = uniform({a:0, b:1})
   var attack_prior = uniform({a:0, b:1})
   var throw_rock_prior = uniform({a:0, b:1})
-  var overall_prior = uniform({a:0, b:1})
+  var overall_prior = uniform({a:0, b:1}) // "average" action
   
-  var train_prior = uniform({a:0, b:1})
-  var revision_prior = uniform({a:0, b:1})
+  var train_prior = uniform({a:0, b:1}) // monster strength prior for familiar and surprising events
+  var revision_prior = uniform({a:0, b:1}) // monster strength prior for postsurprising events
   
   var random_params = {
       alpha: alpha,
-      alpha_familiar: alpha_familiar,
-      alpha_surprising: alpha_surprising,
-      alpha_postsurprising: alpha_postsurprising,
-      alpha_neutral: alpha_neutral,
+      //alpha_familiar: alpha_familiar,
+      //alpha_surprising: alpha_surprising,
+      //alpha_postsurprising: alpha_postsurprising,
+      //alpha_neutral: alpha_neutral,
       certain_zero: certain_zero,
       certain_it: certain_it,
-      certain_surp: certain_surp,
-      certain_surp_it: certain_surp_it,
+      //certain_surp: certain_surp,
+      //certain_surp_it: certain_surp_it,
       certain_clean: certain_clean,
       certain_clean_it: certain_clean_it,
       certain_low: certain_low,
@@ -796,7 +802,7 @@ var dataAnalysis = function(model_generator, fitting_params, fixed_params)
 {
   var model = model_generator(fitting_params, fixed_params)
 
-  var predictions = {
+  var results = {
     speaker:
       map(function(experiment){
         map(function(state){ 
@@ -810,7 +816,7 @@ var dataAnalysis = function(model_generator, fitting_params, fixed_params)
           var utt_count = map(function(utterance){ return speaker_data[utterance] }, _.keys(speaker_data))
 
           observe(Multinomial({n: sum(utt_count), ps: utt_probs}), utt_count)
-          return multinomial({n: sum(utt_count), ps: utt_probs})
+          return {predictions: multinomial({n: sum(utt_count), ps: utt_probs}), score: Multinomial({n: sum(utt_count), ps: utt_probs}).score(utt_count)}
         },
         experiment.states)
       },
@@ -829,46 +835,67 @@ var dataAnalysis = function(model_generator, fitting_params, fixed_params)
           var int_count = map(function(state){ return listener_data[state] }, _.keys(listener_data))
 
           observe(Multinomial({n: sum(int_count), ps: int_probs}), int_count)
-          return multinomial({n: sum(int_count), ps: int_probs})
+          return {predictions: multinomial({n: sum(int_count), ps: int_probs}), score: Multinomial({n: sum(int_count), ps: int_probs}).score(int_count)}
         },
         experiment.utterances)
       },
       model.listener_experiments)
   }
   
-  return Object.assign({}, model.params, {samples: predictions}) // union of two dictionaries
+  return Object.assign({}, model.params, {samples: results}) // return both calculated parameters and sample predictions
 }
 
-var estimateAndSample = function(model_generator, fitting_params, fixed_params, n_samples, to_sample, filename)
+var estimateAndSample = function(model_generator, fitting_params, fixed_params, n_samples, n_burn_samples, to_sample, filename)
 {
-  var burn_samples = 10000
+  //var burn_samples = 10000
 
   var parameter_estimation = Infer({
     method: "MCMC",
+    //onlyMAP: true,
     samples: n_samples,
-    burn: burn_samples,
+    burn: n_burn_samples,
     model: function() {dataAnalysis(model_generator, fitting_params, fixed_params)}})
 
   //viz(parameter_estimation)
   //viz.marginals(parameter_estimation)
+
+  //var marginalAlpha = marginalize(parameter_estimation, 'alpha');
+  //viz(marginalAlpha); 
+  
+  // Project down to only the two parameters of interest
+  //var jointAB = Marginal(ize)(fullDist, function(x) {
+    //return [x.a, x.b]; 
+  //});
+
+  // Visualize the isolated joint distribution
+  //viz(jointAB);
 
   var params_array = []
 
   map(
     function(param)
     {
-      if (param != 'samples')
+      if (param != 'samples' && param != 'score')
         params_array.push([param, expectation(marginalize(parameter_estimation, param))])
     },
     _.keys(parameter_estimation.samples[0].value)
   )
 
+  var samples = map(function(x) { x.value.samples }, parameter_estimation.samples)
+
   if (to_sample)
   {
-    var samples = map(function(x) { x.value.samples }, parameter_estimation.samples)
-    json.write(filename, samples.slice(burn_samples))
+    var speaker = map(function(x) { map(function(y) {map(function(z) {z.predictions}, y)}, x.speaker) }, samples)
+    var listener = map(function(x) { map(function(y) {map(function(z) {z.predictions}, y)}, x.listener) }, samples)
+    var zip = map2(function(s, l) {return {speaker: s, listener: l}}, speaker, listener)
+    json.write(filename, zip)
     print("sample saved")
   }
+
+  var speaker = map(function(x) { sum(map(function(y) {sum(map(function(z) {z.score}, y))}, x.speaker)) }, samples)
+  var listener = map(function(x) { sum(map(function(y) {sum(map(function(z) {z.score}, y))}, x.listener)) }, samples)
+  var zip = map2(function(s, l) {return Math.exp(s + l)}, speaker, listener)
+  params_array.push(['score', listMean(zip)])
 
   return Object.fromEntries(params_array)
 }
@@ -1075,10 +1102,64 @@ var suffix = ''
 //print(params)
 
 
-//estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener1, actions: actions, cost: 'both'}, {}, 25000, true, "sample1.json")
-//estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener2, actions: actions, cost: 'both'}, {}, 25000, true, "sample2.json")
-//estimateAndSample(modelMainExps, {actions: actions, cost: 'np'}, {}, speaker, listener, 20000, true, "sample2.json")
-//estimateAndSample(modelMainExps, {actions: actions, cost: 'np'}, {}, pragmaticSpeaker, literalListener, 20000, true, "sample2.json")
+var params_dist = {
+ alpha: 3.2505919297037393,
+ certain_zero: 0.27503223274427935,
+ certain_it: 0.8934268074725364,
+ certain_clean: 0.9677187134194958,
+ certain_clean_it: 0.8689695174433358,
+ certain_low: 0.3086259701922105,
+ certain_low_it: 0.961343240278975,
+ certain_high: 0.47631743904935986,
+ certain_high_it: 0.836567633291919,
+ salience_prior: 0.5,
+ replacement_prior: -1,
+ agent_bias: -1,
+ np_bias: 0.5,
+ np_bias2: 0.5,
+ np_cost: 0.6236007342192497,
+ pro_cost: 0.5031895373070607,
+ jump_over_prior: 0.4227115058097374,
+ wave_prior: 0.5216024697149727,
+ attack_prior: 0.5668741585837016,
+ throw_rock_prior: 0.6952348187411284,
+ overall_prior: 0.47070436615913375,
+ train_prior: 0.5885806095540782,
+ revision_prior: 0.38191923542155615
+}
+
+var params_point = {
+ salience_prior: 0.5,
+ replacement_prior: -1,
+ agent_bias: -1,
+ np_bias: 0.5,
+ np_bias2: 0.5,
+ alpha: 2.9,
+ overall_prior: 0.47070436615913375,
+np_cost: 0.3,
+pro_cost: 0.3,
+train_prior: 0.59,
+jump_over_prior: 0.38,
+wave_prior: 0.48,
+attack_prior: 0.55,
+throw_rock_prior: 0.68,
+revision_prior: 0.37,
+certain_low: 0.36,
+certain_low_it: 0.96,
+certain_high: 0.25,
+certain_high_it: 0.94,
+certain_clean: 0.99,
+certain_clean_it: 0.89,
+certain_zero: 0.1,
+certain_it: 0.47
+}
+
+//var estimates = estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both', n_noise_levels: 0}, {replacement_prior: -1}, 10000, 5000, true, "sample1.json");
+//console.log(estimates);
+//json.write("params.json", estimates)
+
+//console.log(modelScore(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, params_point, 3000));
+
 
 
 //var params = json.read("params_no_salience.json")
@@ -1108,7 +1189,7 @@ var suffix = ''
 //var params = json.read("params_replacement_prior2.json")
 // 2.720660206606585e-85
 
-var gridSearch = function(params, param_list)
+var gridSearch = function(params, params_transfer, param_list)
 {
   //print(param_list)
 
@@ -1118,9 +1199,13 @@ var gridSearch = function(params, param_list)
     function(step)
     {
       var param = param_list[0]
-      var param_value = param.startsWith('alpha') || param == 'np_cost' || param == 'pro_cost' ? step / 10 : step / 100
+      var param_value = param.startsWith('alpha') /*|| param == 'np_cost' || param == 'pro_cost'*/ ? step / 10 : step / 100
 
-      var local_params = Object.assign({}, params, Object.fromEntries([[param, param_value]]))
+      var arr = []
+      arr.push([param, param_value]);
+      map(function(param) { arr.push([param, param_value]);}, param in params_transfer ? params_transfer[param] : [])
+
+      var local_params = Object.assign({}, params, Object.fromEntries(arr))
 
       if (param_list.length > 1)
       {
@@ -1129,7 +1214,7 @@ var gridSearch = function(params, param_list)
       else
       {
         var score = modelScore(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, local_params, 1)
-        return {params: local_params, score: score}
+        return {params: local_params, params_transfer, score: score}
       }
     },
     steps
@@ -1152,15 +1237,16 @@ var randomWalk = function(best, param_list, skip_param_list)
   var one_param_list = [param_list[index]]
   var new_param_list = param_list.toSpliced(index, 1)
 
-  var result1 = gridSearch(best.params, Array.isArray(one_param_list[0]) ? one_param_list[0] : one_param_list)
+  var result1 = gridSearch(best.params, best.params_transfer, Array.isArray(one_param_list[0]) ? one_param_list[0] : one_param_list)
   var result = result1.score > best.score ? result1 : best
   //print(result.score)
 
   if (result1.score < best.score)
   {
-    print(best.params[param_list[index]])
-    print(result1.params[param_list[index]])
-    print(best.params)
+    print("all values worse")
+    //print(best.params[param_list[index]])
+    //print(result1.params[param_list[index]])
+    //print(best.params)
   }
   
   var param_list = result1.score > best.score ? new_param_list.concat(skip_param_list): new_param_list
@@ -1234,28 +1320,56 @@ var params = {
 //print(randomRandomWalk({}, ["alpha", "np_cost", "pro_cost", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "replacement_prior"]))
 
 var params = {
+  salience_prior: 0.5,
   replacement_prior: -1,
+  agent_bias: -1,
+  np_bias: 0.5,
+  np_bias2: 0.5,
   revision_prior: 0.5,
   train_prior: 0.5,
   throw_rock_prior: 0.5,
   attack_prior: 0.5,
   wave_prior: 0.5,
   jump_over_prior: 0.5,
-  certain_it: 0.5,
-  certain_zero: 0.5,
-  certain_clean_it: 0.5,
-  certain_clean: 0.5,
-  certain_high_it: 0.5,
-  certain_high: 0.5,
-  certain_low_it: 0.5,
-  certain_low: 0.5,
+  certain_it: 0.99,
+  certain_zero: 0.99,
+  certain_clean_it: 0.99,
+  certain_clean: 0.99,
+  certain_high_it: 0.99,
+  certain_high: 0.99,
+  certain_low_it: 0.99,
+  certain_low: 0.99,
   pro_cost: 0,
   np_cost: 0,
   alpha: 1
 }
 
+//var params_transfer = {
+//  "certain_clean": ["certain_low", "certain_high", "certain_zero"],
+//  "certain_clean_it": ["certain_low_it", "certain_high_it", "certain_it"]
+//}
 
-console.log(randomWalk({params: params, score: -1}, ["alpha", "np_cost", "pro_cost", "train_prior", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "revision_prior", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], []))
+//var params_transfer = {
+//  "certain_low": ["certain_high", "certain_zero"],
+//  "certain_low_it": ["certain_high_it", "certain_it"]
+//}
+
+//var params_transfer = {
+//  "certain_low": ["certain_zero"],
+//  "certain_low_it": ["certain_it"]
+//}
+
+//var params_transfer = {
+//  "certain_low": ["certain_high"],
+//  "certain_low_it": ["certain_high_it"]
+//}
+
+var params_transfer = {}
+
+//var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "train_prior", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "revision_prior", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], [])
+var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "train_prior", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "revision_prior"], [])
+console.log(estimates)
+json.write("params_point.json", estimates.params)
 
 //json.write("params_manual.json", params)
 //var params = json.read("params.json")
@@ -1296,3 +1410,8 @@ print(modelScore(modelMainExps, {actions: actions, cost: 'np'}, {}, pragmaticSpe
 //print(sample(DiscreteBeta(0.5451610, 0.6961924)))
 
 //Object.fromEntries([["a", 1]]);
+
+//var params = json.read('params_manual_salience.json')
+//var params = json.read('params_manual_replacement.json')
+
+//modelScore(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, params, 1)
