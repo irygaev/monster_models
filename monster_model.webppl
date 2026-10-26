@@ -1154,7 +1154,7 @@ certain_zero: 0.1,
 certain_it: 0.47
 }
 
-//var estimates = estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both', n_noise_levels: 0}, {replacement_prior: -1}, 10000, 5000, true, "sample1.json");
+//var estimates = estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both', n_noise_levels: 4}, {replacement_prior: -1}, 10000, 5000, true, "sample1.json");
 //console.log(estimates);
 //json.write("params.json", estimates)
 
@@ -1209,7 +1209,7 @@ var gridSearch = function(params, params_transfer, param_list)
 
       if (param_list.length > 1)
       {
-        return gridSearch(local_params, param_list.slice(1))
+        return gridSearch(local_params, params_transfer, param_list.slice(1))
       }
       else
       {
@@ -1229,7 +1229,7 @@ var gridSearch = function(params, params_transfer, param_list)
 
 var randomWalk = function(best, param_list, skip_param_list)
 {
-  var index = Math.floor(Math.random() * param_list.length)
+  var index = 0;//Math.floor(Math.random() * param_list.length)
 
   //var probs = map(function(x) {return Math.pow(1000, -(Array.isArray(x) ? x.length : 1))}, param_list)
   //var index = categorical(probs, Array.from(param_list.keys()))
@@ -1287,10 +1287,10 @@ var randomizeParams = function(params, param_list)
     return randomizeParams(params, param_list)
 }
 
-var randomRandomWalk = function(params, param_list)
+var randomRandomWalk = function(params, params_transfer, param_list)
 {
   var random_params = randomizeParams(params, param_list)
-  return randomWalk({params: random_params, score: 0}, param_list, [])
+  return randomWalk({params: random_params, params_transfer: params_transfer, score: 0}, param_list, [])
 }
 
 var params = {
@@ -1366,8 +1366,12 @@ var params = {
 
 var params_transfer = {}
 
+//var params_transfer = {"attack_prior": ["wave_prior"]}
+
+//var params_transfer = {"np_cost": ["pro_cost"]}
+
 //var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "train_prior", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "revision_prior", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], [])
-var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "train_prior", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "revision_prior"], [])
+var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "train_prior", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "revision_prior", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], [])
 console.log(estimates)
 json.write("params_point.json", estimates.params)
 
