@@ -1320,28 +1320,28 @@ var params = {
 //print(randomRandomWalk({}, ["alpha", "np_cost", "pro_cost", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "replacement_prior"]))
 
 var params = {
-  salience_prior: 0.5,
+  certain_low: 0.99,
+  certain_low_it: 0.99,
+  certain_high: 0.99,
+  certain_high_it: 0.99,
+  certain_clean: 0.99,
+  certain_clean_it: 0.99,
+  certain_zero: 0.99,
+  certain_it: 0.99,
+  alpha: 1,
+  np_cost: 0.1,
+  pro_cost: 0.1,
+  jump_over_prior: 0.5,
+  wave_prior: 0.5,
+  attack_prior: 0.5,
+  throw_rock_prior: 0.5,
+  train_prior: 0.5,
+  revision_prior: 0.5,
   replacement_prior: -1,
-  agent_bias: -1,
+  salience_prior: 0.5,
   np_bias: 0.5,
   np_bias2: 0.5,
-  revision_prior: 0.5,
-  train_prior: 0.5,
-  throw_rock_prior: 0.5,
-  attack_prior: 0.5,
-  wave_prior: 0.5,
-  jump_over_prior: 0.5,
-  certain_it: 0.99,
-  certain_zero: 0.99,
-  certain_clean_it: 0.99,
-  certain_clean: 0.99,
-  certain_high_it: 0.99,
-  certain_high: 0.99,
-  certain_low_it: 0.99,
-  certain_low: 0.99,
-  pro_cost: 0,
-  np_cost: 0,
-  alpha: 1
+  agent_bias: -1
 }
 
 //var params_transfer = {
@@ -1370,10 +1370,34 @@ var params_transfer = {}
 
 //var params_transfer = {"np_cost": ["pro_cost"]}
 
+var param_list = ["certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it", "alpha", "np_cost", "pro_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior"];
+var param_array = []
+
+map(function(i) {param_array.push(param_list.slice(0, i));}, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17])
+//map(function(i) {param_array.push(param_list.slice(0, i));}, [1, 2])
+//print(param_array)
+
+var result_array = []
+
+map
+(
+  function(param_list)
+  {
+    var params_transfer = {}
+    var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, param_list, [])
+    console.log(estimates)
+    result_array.push({param_list: param_list, estimates: estimates})
+    json.write("likelihood2.json", result_array)
+  },
+  param_array
+)
+
+console.log(result_array)
+
 //var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "train_prior", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "revision_prior", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], [])
-var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "train_prior", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "revision_prior", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], [])
-console.log(estimates)
-json.write("params_point.json", estimates.params)
+//var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], [])
+//console.log(estimates)
+//json.write("params_point.json", estimates.params)
 
 //json.write("params_manual.json", params)
 //var params = json.read("params.json")
