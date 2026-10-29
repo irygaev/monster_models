@@ -312,7 +312,7 @@ var listener0 = listener0_sum
 var literalListener = listener0
 
 // higher order speaker
-var speakerN = function(n, state, params)
+var speakerN_full = function(n, state, params)
 {
   if (n == 0)
   {
@@ -361,6 +361,59 @@ var speakerN = function(n, state, params)
     })
   }
 }
+
+var speakerN_simple = function(n, state, params)
+{
+  if (n == 0)
+  {
+    return speaker0(state, params)
+  }
+  else if (state == 'patient_falls')
+  {
+    var p_np = params.p_np
+    var p_pro = (1 - p_np) * params.p_pro
+    var p_zero = 1 - p_np - p_pro
+
+    return Categorical({ps: [0, p_np, p_pro, p_zero], vs: utterances})
+  }
+  else
+  {
+    var patient_color =
+      (params.event_type == "familiar")   ? (state == 'patient_falls') ? ('blue') : ('red') :
+      (params.event_type == "surprising") ? (state == 'patient_falls') ? ('red') : ('blue'):
+      (params.event_type == "postsurprising") ? (state == 'patient_falls') ? ('blue') : ('red'):
+      ('yellow')
+
+    //var listener_params = Object.assign({}, params, {salience_prior: salience_prior, patient_color: patient_color})
+    var listener_params = Object.assign({}, params, {patient_color: patient_color})
+
+    Infer({model: function()
+    {
+      var utterance = utteranceByPrior(state, params)
+
+      var utility = sum
+      (
+        map
+        (
+          function(p_utt)
+          {
+            var confusion_prob = confusionProb(utterance, p_utt, params)
+            var likelihood = listenerN(n - 1, p_utt, listener_params).score(state)
+            return confusion_prob == 0 ? 0 : confusion_prob * likelihood
+          },
+          utterances
+        )
+      )
+      
+      factor(params.alpha == 0 ? 0 : params.alpha * utility)
+
+      return utterance
+    }
+    })
+  }
+}
+
+var speakerN = speakerN_simple
 
 // higher order listener
 var listenerN_sample = function(n, utterance, params)
@@ -513,6 +566,9 @@ var modelMainExps = function(fitting_params, fixed_params)
   
   var train_prior = uniform({a:0, b:1}) // monster strength prior for familiar and surprising events
   var revision_prior = uniform({a:0, b:1}) // monster strength prior for postsurprising events
+
+  var p_np = uniform({a:0, b:1}) // fixed probability of producing an NP for patient falls state
+  var p_pro = uniform({a:0, b:1}) // fixed probability of producing a pronoun vs zero anaphor for patient falls state
   
   var random_params = {
       alpha: alpha,
@@ -543,7 +599,9 @@ var modelMainExps = function(fitting_params, fixed_params)
       throw_rock_prior: throw_rock_prior,
       overall_prior: overall_prior,
       train_prior: train_prior,
-      revision_prior: revision_prior
+      revision_prior: revision_prior,
+      p_np: p_np,
+      p_pro: p_pro,
     }
 
   var params = Object.assign({}, random_params, fixed_params) // override random parameters by given fixed ones
@@ -603,7 +661,9 @@ var modelMainExps = function(fitting_params, fixed_params)
           train_prior: params.train_prior,
           revision_prior: params.revision_prior,
           np_cost: params.np_cost,
-          pro_cost: params.pro_cost
+          pro_cost: params.pro_cost,
+          p_np: params.p_np,
+          p_pro: params.p_pro
         },
         speaker: fitting_params.speaker,
         states: states,
@@ -636,6 +696,8 @@ var modelMainExps = function(fitting_params, fixed_params)
           revision_prior: params.revision_prior,
           np_cost: params.np_cost,
           pro_cost: params.pro_cost,
+          p_np: params.p_np,
+          p_pro: params.p_pro
         },
         speaker: fitting_params.speaker,
         states: states,
@@ -668,6 +730,8 @@ var modelMainExps = function(fitting_params, fixed_params)
           revision_prior: params.revision_prior,
           np_cost: params.np_cost,
           pro_cost: params.pro_cost,
+          p_np: params.p_np,
+          p_pro: params.p_pro
         },
         speaker: fitting_params.speaker,
         states: states,
@@ -700,6 +764,8 @@ var modelMainExps = function(fitting_params, fixed_params)
           revision_prior: params.revision_prior,
           np_cost: params.np_cost,
           pro_cost: params.pro_cost,
+          p_np: params.p_np,
+          p_pro: params.p_pro
         },
         speaker: fitting_params.speaker,
         states: states,
@@ -733,7 +799,9 @@ var modelMainExps = function(fitting_params, fixed_params)
           train_prior: params.train_prior,
           revision_prior: params.revision_prior,
           np_cost: params.np_cost,
-          pro_cost: params.pro_cost
+          pro_cost: params.pro_cost,
+          p_np: params.p_np,
+          p_pro: params.p_pro
         },
         listener: fitting_params.listener,
         states: states,
@@ -764,7 +832,9 @@ var modelMainExps = function(fitting_params, fixed_params)
           train_prior: params.train_prior,
           revision_prior: params.revision_prior,
           np_cost: params.np_cost,
-          pro_cost: params.pro_cost
+          pro_cost: params.pro_cost,
+          p_np: params.p_np,
+          p_pro: params.p_pro
         },
         listener: fitting_params.listener,
         states: states,
@@ -795,7 +865,9 @@ var modelMainExps = function(fitting_params, fixed_params)
           train_prior: params.train_prior,
           revision_prior: params.revision_prior,
           np_cost: params.np_cost,
-          pro_cost: params.pro_cost
+          pro_cost: params.pro_cost,
+          p_np: params.p_np,
+          p_pro: params.p_pro
         },
         listener: fitting_params.listener,
         states: states,
@@ -1249,7 +1321,7 @@ var gridSearch = function(params, params_transfer, param_list)
       }
       else
       {
-        var score = modelScore(modelMainExps, {speaker: speaker1, listener: listener2, actions: actions, cost: 'both'}, local_params, 1)
+        var score = modelScore(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, local_params, 1)
         return {params: local_params, params_transfer, score: score}
       }
     },
@@ -1365,6 +1437,8 @@ var params = {
   throw_rock_prior: 0.5,
   train_prior: 0.5,
   revision_prior: 0.5,
+  p_np: 0.5,
+  p_pro: 0.5,
   certain_low: 0.99,
   certain_low_it: 0.99,
   certain_high: 0.99,
@@ -1409,9 +1483,37 @@ var params_transfer = {}
 //var actions = ['jump_over', 'wave', 'attack', 'throw_rock']
 var actions = ['jump_over', 'wave', 'attack', 'throw_rock']
 
+/*
+var params = {
+    alpha: 2.6,
+    np_cost: 0.84,
+    pro_cost: 0.71,
+    jump_over_prior: 0.51,
+    wave_prior: 0.65,
+    attack_prior: 0.5,
+    throw_rock_prior: 0.84,
+    train_prior: 0.62,
+    revision_prior: 0.41,
+    p_np: 0.95,
+    p_pro: 0.64,
+    certain_low: 0.16,
+    certain_low_it: 0.99,
+    certain_high: 0.06,
+    certain_high_it: 0.99,
+    certain_clean: 0.13,
+    certain_clean_it: 0.99,
+    certain_zero: 0.66,
+    certain_it: 0.34,
+    replacement_prior: -1,
+    salience_prior: 0.5,
+    np_bias: 0.5,
+    np_bias2: 0.5,
+    agent_bias: -1
+  }
+*/
 
 //var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], [])
-var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], [])
+var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["attack_prior"], [])
 console.log(estimates)
 json.write("params_point.json", estimates.params)
 
