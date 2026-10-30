@@ -10,6 +10,14 @@ var prod_data_training_familiar = json.read('prod_data_training_familiar.json')
 var prod_data_training_surprising = json.read('prod_data_training_surprising.json')
 var prod_data_training_postsurprising = json.read('prod_data_training_postsurprising.json')
 
+var prod_data_no_training_3 = json.read('prod_data_no_training_3.json')
+var prod_data_no_training_first_3 = json.read('prod_data_no_training_first_3.json')
+var prod_data_no_training_rest_3 = json.read('prod_data_no_training_rest_3.json')
+var prod_data_training_3 = json.read('prod_data_training_3.json')
+var prod_data_training_familiar_3 = json.read('prod_data_training_familiar_3.json')
+var prod_data_training_surprising_3 = json.read('prod_data_training_surprising_3.json')
+var prod_data_training_postsurprising_3 = json.read('prod_data_training_postsurprising_3.json')
+
 var perc_data_clean = json.read('perc_data_clean.json')
 var perc_data_clean_heard = json.read('perc_data_clean_heard.json')
 var perc_data_high_noise = json.read('perc_data_high_noise.json')
@@ -18,6 +26,11 @@ var perc_data_low_noise = json.read('perc_data_low_noise.json')
 var perc_data_low_noise_heard = json.read('perc_data_low_noise_heard.json')
 var perc_data_noise = json.read('perc_data_noise.json')
 var perc_data_noise_heard = json.read('perc_data_noise_heard.json')
+
+var perc_data_clean_3 = json.read('perc_data_clean_3.json')
+var perc_data_high_noise_3 = json.read('perc_data_high_noise_3.json')
+var perc_data_low_noise_3 = json.read('perc_data_low_noise_3.json')
+var perc_data_noise_3 = json.read('perc_data_noise_3.json')
 
 var action_priors = {
   jump_over: 0.4391667,
@@ -569,28 +582,13 @@ var modelMainExps = function(fitting_params, fixed_params)
 
   var p_np = uniform({a:0, b:1}) // fixed probability of producing an NP for patient falls state
   var p_pro = uniform({a:0, b:1}) // fixed probability of producing a pronoun vs zero anaphor for patient falls state
-  
+
   var random_params = {
       alpha: alpha,
       //alpha_familiar: alpha_familiar,
       //alpha_surprising: alpha_surprising,
       //alpha_postsurprising: alpha_postsurprising,
       //alpha_neutral: alpha_neutral,
-      certain_zero: certain_zero,
-      certain_it: certain_it,
-      //certain_surp: certain_surp,
-      //certain_surp_it: certain_surp_it,
-      certain_clean: certain_clean,
-      certain_clean_it: certain_clean_it,
-      certain_low: certain_low,
-      certain_low_it: certain_low_it,
-      certain_high: certain_high,
-      certain_high_it: certain_high_it,
-      salience_prior: salience_prior,
-      replacement_prior: replacement_prior,
-      agent_bias: agent_bias,
-      np_bias: np_bias,
-      np_bias2: np_bias2,
       np_cost: np_cost,
       pro_cost: pro_cost,
       jump_over_prior: jump_over_prior,
@@ -602,6 +600,21 @@ var modelMainExps = function(fitting_params, fixed_params)
       revision_prior: revision_prior,
       p_np: p_np,
       p_pro: p_pro,
+      certain_low: certain_low,
+      certain_low_it: certain_low_it,
+      certain_high: certain_high,
+      certain_high_it: certain_high_it,
+      certain_clean: certain_clean,
+      certain_clean_it: certain_clean_it,
+      certain_zero: certain_zero,
+      certain_it: certain_it,
+      //certain_surp: certain_surp,
+      //certain_surp_it: certain_surp_it,
+      replacement_prior: replacement_prior,
+      salience_prior: salience_prior,
+      np_bias: np_bias,
+      np_bias2: np_bias2,
+      agent_bias: agent_bias,
     }
 
   var params = Object.assign({}, random_params, fixed_params) // override random parameters by given fixed ones
@@ -816,7 +829,7 @@ var modelMainExps = function(fitting_params, fixed_params)
     function(action)
     {
       return {
-        data: perc_data_low_noise[action],
+        data: perc_data_noise[action],
         params: {
           event_type: "neutral",
           action: action,
@@ -844,12 +857,12 @@ var modelMainExps = function(fitting_params, fixed_params)
     fitting_params.actions
   )
 
-  var listener_high_noise = map
+  var listener_high_noise = []/*map
   (
     function(action)
     {
       return {
-        data: perc_data_high_noise[action],
+        data: perc_data_high_noise_3[action],
         params: {
           event_type: "neutral",
           action: action,
@@ -875,7 +888,7 @@ var modelMainExps = function(fitting_params, fixed_params)
       }
     },
     fitting_params.actions
-  )
+  )*/
 
   var listener_experiments = fitting_params.listener === null ? [] : listener_clean.concat(listener_low_noise.concat(listener_high_noise))
 
@@ -1132,7 +1145,7 @@ var state = "patient_falls"
 //display(inversePragmaticSpeaker(state, params))
 
 //var actions = ['jump_over', 'wave', 'attack', 'throw_rock']
-var actions = ['wave', 'attack', 'throw_rock']
+var actions = ['jump_over', 'wave', 'attack', 'throw_rock']
 //var actions = ['jump_over']
 //var actions = ['overall']
 
@@ -1325,7 +1338,7 @@ var gridSearch = function(params, params_transfer, param_list)
         return {params: local_params, params_transfer, score: score}
       }
     },
-    param == 'np_cost' ? steps : steps
+    param.endsWith('cost') ? steps2 : steps
   )
 
   var best = reduce(function(x, acc) {return x.score > acc.score ? x : acc}, {params: {}, score: -1}, scores)
@@ -1470,40 +1483,80 @@ var params = {
 //}
 
 //var params_transfer = {
+//  "certain_high": ["certain_zero"],
+//  "certain_high_it": ["certain_it"]
+//}
+
+//var params_transfer = {
 //  "certain_low": ["certain_high"],
 //  "certain_low_it": ["certain_high_it"]
 //}
 
-var params_transfer = {}
+//var params_transfer = {
+//  "certain_high": ["certain_zero"],
+//  "certain_high_it": ["certain_it"],
+//  "np_cost": ["pro_cost"]
+//}
+
+//var params_transfer = {
+//  "certain_high": ["certain_zero"],
+//  "certain_high_it": ["certain_it"],
+//  "attack_prior": ["wave_prior"]
+//}
+
+//var params_transfer = {
+//  "certain_high": ["certain_zero"],
+//  "certain_high_it": ["certain_it"],
+//  "attack_prior": ["wave_prior"],
+//  "np_cost": ["pro_cost"]
+//}
+
+var params_transfer = {
+  "certain_low": ["certain_high", "certain_zero"],
+  "certain_low_it": ["certain_high_it", "certain_it"],
+  //"attack_prior": ["wave_prior"],
+  "np_cost": ["pro_cost"]
+}
+
+//var params_transfer = {
+//  "certain_low": ["certain_high"],
+//  "certain_low_it": ["certain_high_it"],
+//  "attack_prior": ["wave_prior"],
+//  "np_cost": ["pro_cost"]
+//}
+
+//var params_transfer = {}
 
 //var params_transfer = {"attack_prior": ["wave_prior"]}
 
 //var params_transfer = {"np_cost": ["pro_cost"]}
 
 //var actions = ['jump_over', 'wave', 'attack', 'throw_rock']
+//var actions = ['jump_over', 'attack', 'throw_rock']
 var actions = ['jump_over', 'wave', 'attack', 'throw_rock']
+
 
 /*
 var params = {
-    alpha: 2.6,
-    np_cost: 0.84,
-    pro_cost: 0.71,
-    jump_over_prior: 0.51,
-    wave_prior: 0.65,
-    attack_prior: 0.5,
-    throw_rock_prior: 0.84,
+    alpha: 3,
+    np_cost: 0.83,
+    pro_cost: 0.83,
+    jump_over_prior: 0.44,
+    wave_prior: 0.61,
+    attack_prior: 0.61,
+    throw_rock_prior: 0.81,
     train_prior: 0.62,
-    revision_prior: 0.41,
-    p_np: 0.95,
-    p_pro: 0.64,
-    certain_low: 0.16,
+    revision_prior: 0.37,
+    p_np: 0.94,
+    p_pro: 0.72,
+    certain_low: 0.06,
     certain_low_it: 0.99,
     certain_high: 0.06,
     certain_high_it: 0.99,
-    certain_clean: 0.13,
-    certain_clean_it: 0.99,
-    certain_zero: 0.66,
-    certain_it: 0.34,
+    certain_clean: 0.99,
+    certain_clean_it: 0.89,
+    certain_zero: 0.06,
+    certain_it: 0.99,
     replacement_prior: -1,
     salience_prior: 0.5,
     np_bias: 0.5,
@@ -1512,8 +1565,10 @@ var params = {
   }
 */
 
-//var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], [])
-var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["attack_prior"], [])
+//var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "p_np", "p_pro", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], [])
+//var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "p_np", "p_pro", "certain_low", "certain_low_it", "certain_clean", "certain_clean_it"], [])
+//var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "jump_over_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "p_np", "p_pro", "certain_low", "certain_low_it", "certain_clean", "certain_clean_it"], [])
+var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "p_np", "p_pro", "certain_low", "certain_low_it", "certain_clean", "certain_clean_it"], [])
 console.log(estimates)
 json.write("params_point.json", estimates.params)
 

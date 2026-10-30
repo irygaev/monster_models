@@ -1,0 +1,17 @@
+action,utterance,state,count
+jump_over,pro,agent_falls,31
+jump_over,pro,patient_falls,4
+jump_over,zero,agent_falls,45
+jump_over,zero,patient_falls,4
+attack,pro,agent_falls,47
+attack,pro,patient_falls,24
+attack,zero,agent_falls,63
+attack,zero,patient_falls,8
+throw_rock,pro,agent_falls,18
+throw_rock,pro,patient_falls,15
+throw_rock,zero,agent_falls,32
+throw_rock,zero,patient_falls,11
+overall,pro,agent_falls,96
+overall,pro,patient_falls,43
+overall,zero,agent_falls,140
+overall,zero,patient_falls,23
