@@ -1,6 +1,7 @@
 library(tidyverse)
 library(ggplot2)
 library(jsonlite)
+library(ggh4x)
 
 readSpeakerData <- function(sample_filename, part) {
     
@@ -56,7 +57,7 @@ readSpeakerData <- function(sample_filename, part) {
     speaker_data <- speaker_data %>%
         mutate(action = factor(action, levels=actions)) %>%
         mutate(state = factor(state, levels=states)) %>%
-        mutate(utterance = factor(utterance, levels=rev(utterances)))
+        mutate(utterance = factor(utterance, levels=utterances))
     
     return (speaker_data)
 }
@@ -79,30 +80,31 @@ readSpeakerGold <- function(gold_csv) {
     return (speaker_gold)
 }
 
-drawSpeaker <- function(speaker_data, gold_csv) {
+drawSpeaker <- function(speaker_data, gold_csv, title, filename) {
     
     speaker_gold = readSpeakerGold(gold_csv)
     
-    speaker_data %>%
+    plot <- speaker_data %>%
         ggplot(aes(x=count)) +
         #geom_histogram() +
-        geom_density() +
+        geom_density(adjust = 1.8) +
         geom_point(data = speaker_gold, aes(x = percent, y = 0, color = "red")) +
-        facet_grid(action ~ state + utterance) +
-        ylim(0, 0.2)
+        facet_nested(action ~ state + utterance, #factor(utterance, levels=c("np", "pro", "zero")),
+            labeller = labeller(
+                action = c("jump_over" = "jump over", "throw_rock" = "throw rock"),
+                state = c("agent_falls" = "agent antecedent", "patient_falls" = "patient antecedent"),
+                utterance = c("np" = "noun phrase", "pro" = "pronoun", "zero" = "zero anaphor")
+            )
+        ) +
+        guides(color="none") +
+        labs(x = "Production rate, %", y="Probability density", title = title) +
+        ylim(0, 0.2) +
+        theme_bw() +
+        theme(text = element_text(size = 14), plot.title = element_text(hjust = 0.5))
+
+    ggsave(filename, width = 8, height = 6, units = "in")
     
-    #    speaker_data %>%
-    #        ggplot(aes(x=count)) +
-    #        #geom_histogram() +
-    #        geom_density() +
-    #        geom_point(data = speaker_gold, aes(x = percent, y = 0, color = "red")) +
-    #        facet_grid(action ~ state + factor(utterance, levels=c("np", "pro", "zero"))) +
-    #        guides(color="none") +
-    #        labs(x = "Production rate, %", y="Probability density") +
-    #        ylim(0, 0.2) +
-    #        theme_bw() +
-    #        theme(text = element_text(size = 14))
-    #    #ggsave("fig-production-model.png", width = 8, height = 3, units = "in")
+    return(plot)
 }
 
 drawSpeakerDist <- function(dist) {
@@ -224,31 +226,32 @@ readListenerGold <- function(gold_csv) {
     return (listener_gold)
 }
 
-drawListener <- function(listener_data, gold_csv) {
+drawListener <- function(listener_data, gold_csv, title, filename) {
     
     listener_gold = readListenerGold(gold_csv)
     
-    listener_data %>%
+    plot <- listener_data %>%
         ggplot(aes(x=count)) +
         #geom_histogram() +
-        geom_density() +
+        geom_density(adjust = 1.8) +
         geom_point(data = listener_gold, aes(x = percent, y = 0, color = "red")) +
-        facet_grid(action ~ utterance + state) +
-        #xlim(0, 100) +
-        ylim(0, 0.2)
+        facet_nested(action ~ utterance + state,
+            labeller = labeller(
+                action = c("jump_over" = "jump over", "throw_rock" = "throw rock"),
+                state = c("agent_falls" = "agent antecedent", "patient_falls" = "patient antecedent"),
+                utterance = c("np" = "noun phrase", "pro" = "pronoun", "zero" = "zero anaphor")
+            )
+        ) +
+        #facet_nested(factor(utterance, levels = c("zero", "pro"), labels = c('zero anaphor', 'pronoun')) ~ factor(state, labels=c("patient falls", "agent falls"))) +
+        guides(color="none") +
+        labs(x = "Interpretation rate in %", y="Probability density", title = title) +
+        ylim(0, 0.2) +
+        theme_bw() +
+        theme(text = element_text(size = 14), plot.title = element_text(hjust = 0.5))
     
-    #    listener_data %>%
-    #        ggplot(aes(x=count)) +
-    #        #geom_histogram() +
-    #        geom_density() +
-    #        geom_point(data = listener_gold, aes(x = percent, y = 0, color = "red")) +
-    #        facet_grid(factor(utterance, levels = c("zero", "pro"), labels = c('zero anaphor', 'pronoun')) ~ factor(state, labels=c("patient falls", "agent falls"))) +
-    #        guides(color="none") +
-    #        labs(x = "Perception rate in %", y="Probability density") +
-    #        #ylim(0, 0.12) +
-    #        theme_bw() +
-    #        theme(text = element_text(size = 14))
-    #    ggsave("fig-perception-model.png", width = 8, height = 3, units = "in")
+    ggsave(filename, width = 8, height = 6, units = "in")
+    
+    return(plot)
 }
 
 drawListenerGold <- function(gold_csv) {

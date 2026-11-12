@@ -6,34 +6,35 @@ actions <- c('jump_over', 'wave', 'attack', 'throw_rock')
 states <- c('agent_falls', 'patient_falls')
 utterances <- c('np', 'pro', 'zero')
 
-filename = "sample0.json"
+#filename = "sample2.json"
+filename = "sample_gold_mcmc_10000.json"
 
 
 speaker_data1 = readSpeakerData(filename, 1)
-drawSpeakerDist(speaker_data1)
-drawSpeaker(speaker_data1, "prod_data_training_familiar.csv")
+#drawSpeakerDist(speaker_data1)
+drawSpeaker(speaker_data1, "prod_data_training_familiar.csv", "Familiar events", "fig-production-hist-familiar.pdf")
 
 speaker_data2 = readSpeakerData(filename, 2)
-drawSpeakerDist(speaker_data2)
-drawSpeaker(speaker_data2, "prod_data_training_surprising.csv")
+#drawSpeakerDist(speaker_data2)
+drawSpeaker(speaker_data2, "prod_data_training_surprising.csv", "Surprising events", "fig-production-hist-surprising.pdf")
 
 speaker_data3 = readSpeakerData(filename, 3)
 #drawSpeakerDist(speaker_data3)
-drawSpeaker(speaker_data3, "prod_data_training_postsurprising.csv")
+drawSpeaker(speaker_data3, "prod_data_training_postsurprising.csv", "Post-surprising events", "fig-production-hist-post-surprising.pdf")
 
 speaker_data4 = readSpeakerData(filename, 4)
 #drawSpeakerDist(speaker_data4)
-drawSpeaker(speaker_data4, "prod_data_no_training_rest.csv")
+drawSpeaker(speaker_data4, "prod_data_no_training.csv", "Neutral events", "fig-production-hist-neutral.pdf")
 
 
 listener_data1 = readListenerData(filename, 1)
-drawListener(listener_data1, "perc_data_clean.csv")
+drawListener(listener_data1, "perc_data_clean.csv", "No noise", "fig-perception-hist-clean.pdf")
 
 listener_data2 = readListenerData(filename, 2)
-drawListener(listener_data2, "perc_data_low_noise.csv")
+drawListener(listener_data2, "perc_data_low_noise.csv", "Low noise", "fig-perception-hist-low-noise.png")
 
-listener_data3 = readListenerData(filename, 2)
-drawListener(listener_data3, "perc_data_high_noise.csv")
+listener_data3 = readListenerData(filename, 3)
+drawListener(listener_data3, "perc_data_high_noise.csv", "High noise", "fig-perception-hist-high-noise.pdf")
 
 
 
