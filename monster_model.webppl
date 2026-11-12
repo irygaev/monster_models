@@ -2,6 +2,11 @@
 // OBSERVED DATA
 ////////////////
 
+var print = function(x)
+{
+  console.log(x);
+}
+
 var prod_data_no_training = json.read('prod_data_no_training.json')
 var prod_data_no_training_first = json.read('prod_data_no_training_first.json')
 var prod_data_no_training_rest = json.read('prod_data_no_training_rest.json')
@@ -259,7 +264,7 @@ var stateByPriors = function(params)
 // DIRECT AND INVERSE RSA
 
 // literal speaker
-var speaker0 = function(state, params)
+var speaker0 = dp.cache(function(state, params)
 {
   Infer({model: function()
   {
@@ -267,12 +272,12 @@ var speaker0 = function(state, params)
     condition(meaning(utterance, state))
     return utterance
   }})
-}
+})
 
 var literalSpeaker = speaker0
 
 // literal listener
-var listener0_sample = function(utterance, params)
+var listener0_sample = dp.cache(function(utterance, params)
 {
   Infer
   (
@@ -286,9 +291,9 @@ var listener0_sample = function(utterance, params)
       }
     }
   )
-}
+})
 
-var listener0_sum = function(utterance, params)
+var listener0_sum = dp.cache(function(utterance, params)
 {
   Infer
   (
@@ -318,14 +323,14 @@ var listener0_sum = function(utterance, params)
       }
     }
   )
-}
+})
 
 var listener0 = listener0_sum
 
 var literalListener = listener0
 
 // higher order speaker
-var speakerN_full = function(n, state, params)
+var speakerN_full = dp.cache(function(n, state, params)
 {
   if (n == 0)
   {
@@ -343,8 +348,8 @@ var speakerN_full = function(n, state, params)
       (params.event_type == "postsurprising") ? (state == 'patient_falls') ? ('blue') : ('red'):
       ('yellow')
 
-    //var patient_color = patient_color_0
-    var patient_color = (state == 'agent_falls' || params.replacement_prior == -1 ? patient_color_0 : 'yellow')
+    var patient_color = patient_color_0
+    //var patient_color = (state == 'agent_falls' || params.replacement_prior == -1 ? patient_color_0 : 'yellow')
 
     //var listener_params = Object.assign({}, params, {salience_prior: salience_prior, patient_color: patient_color})
     var listener_params = Object.assign({}, params, {action_prior: action_prior, salience_prior: salience_prior, patient_color: patient_color})
@@ -373,9 +378,9 @@ var speakerN_full = function(n, state, params)
     }
     })
   }
-}
+})
 
-var speakerN_simple = function(n, state, params)
+var speakerN_simple = dp.cache(function(n, state, params)
 {
   if (n == 0)
   {
@@ -424,12 +429,12 @@ var speakerN_simple = function(n, state, params)
     }
     })
   }
-}
+})
 
-var speakerN = speakerN_simple
+var speakerN = speakerN_full
 
 // higher order listener
-var listenerN_sample = function(n, utterance, params)
+var listenerN_sample = dp.cache(function(n, utterance, params)
 {
   if (n == 0)
   {
@@ -450,9 +455,9 @@ var listenerN_sample = function(n, utterance, params)
       }
     )
   }
-}
+})
 
-var listenerN_sum = function(n, utterance, params)
+var listenerN_sum = dp.cache(function(n, utterance, params)
 {
   if (n == 0)
   {
@@ -489,7 +494,7 @@ var listenerN_sum = function(n, utterance, params)
       }
     )
   }
-}
+})
 
 var listenerN = listenerN_sum
 
@@ -760,7 +765,7 @@ var modelMainExps = function(fitting_params, fixed_params)
     function(action)
     {
       return {
-        data: prod_data_no_training_rest[action],
+        data: prod_data_no_training[action],
         params: {
           event_type: "neutral",
           action: action,
@@ -829,7 +834,7 @@ var modelMainExps = function(fitting_params, fixed_params)
     function(action)
     {
       return {
-        data: perc_data_noise[action],
+        data: perc_data_low_noise[action],
         params: {
           event_type: "neutral",
           action: action,
@@ -857,12 +862,12 @@ var modelMainExps = function(fitting_params, fixed_params)
     fitting_params.actions
   )
 
-  var listener_high_noise = []/*map
+  var listener_high_noise = map
   (
     function(action)
     {
       return {
-        data: perc_data_high_noise_3[action],
+        data: perc_data_high_noise[action],
         params: {
           event_type: "neutral",
           action: action,
@@ -888,7 +893,7 @@ var modelMainExps = function(fitting_params, fixed_params)
       }
     },
     fitting_params.actions
-  )*/
+  )
 
   var listener_experiments = fitting_params.listener === null ? [] : listener_clean.concat(listener_low_noise.concat(listener_high_noise))
 
@@ -1032,8 +1037,9 @@ var modelScoreSample = function(model_generator, fitting_params, fixed_params)
           var speaker_predictions = speaker(state, Object.assign({}, experiment.params, speakerTrialParams(experiment, state)))
           var speaker_data = experiment.data[state]
 
-          var utt_probs = map(function(utterance){ return Math.exp(speaker_predictions.score(utterance)) }, _.keys(speaker_data))
           var utt_count = map(function(utterance){ return speaker_data[utterance] }, _.keys(speaker_data))
+          var utt_probs = map(function(utterance){ return Math.exp(speaker_predictions.score(utterance)) }, _.keys(speaker_data))
+          //var utt_probs = map(function(ct) { return ct/sum(utt_count); }, utt_count)
 
           return Multinomial({n: sum(utt_count), ps: utt_probs}).score(utt_count)
         },
@@ -1051,8 +1057,9 @@ var modelScoreSample = function(model_generator, fitting_params, fixed_params)
           var listener_predictions = listener(utterance, Object.assign({}, experiment.params, listenerTrialParams(experiment, utterance)))
           var listener_data = experiment.data[utterance]
 
-          var int_probs = map(function(state){ return Math.exp(listener_predictions.score(state)) }, _.keys(listener_data))
           var int_count = map(function(state){ return listener_data[state] }, _.keys(listener_data))
+          var int_probs = map(function(state){ return Math.exp(listener_predictions.score(state)) }, _.keys(listener_data))
+          //var int_probs = map(function(ct) { return ct/sum(int_count); }, int_count)
 
           return Multinomial({n: sum(int_count), ps: int_probs}).score(int_count)
 
@@ -1273,7 +1280,7 @@ certain_zero: 0.1,
 certain_it: 0.47
 }
 
-//var estimates = estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both', n_noise_levels: 4}, {replacement_prior: -1}, 10000, 5000, true, "sample1.json");
+//var estimates = estimateAndSample(modelMainExps, {speaker: speaker1, listener: listener2, actions: actions, cost: 'both', n_noise_levels: 4}, {replacement_prior: -1}, 10000, 5000, true, "sample2.json");
 //console.log(estimates);
 //json.write("params.json", estimates)
 
@@ -1467,9 +1474,40 @@ var params = {
   agent_bias: -1
 }
 
+/*
+var params = {
+  alpha: 1,
+  np_cost: 0,
+  pro_cost: 0,
+  jump_over_prior: 0.2,
+  wave_prior: 0.2,
+  attack_prior: 0.2,
+  throw_rock_prior: 0.2,
+  train_prior: 0.2,
+  revision_prior: 0.2,
+  p_np: 0.2,
+  p_pro: 0.2,
+  certain_low: 0.5,
+  certain_low_it: 0.5,
+  certain_high: 0.5,
+  certain_high_it: 0.5,
+  certain_clean: 0.5,
+  certain_clean_it: 0.5,
+  certain_zero: 0.5,
+  certain_it: 0.5,
+  replacement_prior: -1,
+  salience_prior: 0.5,
+  np_bias: 0.5,
+  np_bias2: 0.5,
+  agent_bias: -1
+}
+*/
+
 //var params_transfer = {
 //  "certain_clean": ["certain_low", "certain_high", "certain_zero"],
-//  "certain_clean_it": ["certain_low_it", "certain_high_it", "certain_it"]
+//  "certain_clean_it": ["certain_low_it", "certain_high_it", "certain_it"],
+//  "attack_prior": ["wave_prior"],
+//  "np_cost": ["pro_cost"]
 //}
 
 //var params_transfer = {
@@ -1493,30 +1531,30 @@ var params = {
 //}
 
 //var params_transfer = {
-//  "certain_high": ["certain_zero"],
-//  "certain_high_it": ["certain_it"],
+//  "certain_low": ["certain_high"],
+//  "certain_low_it": ["certain_high_it"],
 //  "np_cost": ["pro_cost"]
 //}
 
 //var params_transfer = {
 //  "certain_high": ["certain_zero"],
-//  "certain_high_it": ["certain_it"],
+//  "certain_high_it": ["certain_zero"],
 //  "attack_prior": ["wave_prior"]
 //}
 
 //var params_transfer = {
 //  "certain_high": ["certain_zero"],
-//  "certain_high_it": ["certain_it"],
+//  "certain_high_it": ["certain_zero"],
 //  "attack_prior": ["wave_prior"],
 //  "np_cost": ["pro_cost"]
 //}
 
-var params_transfer = {
-  "certain_low": ["certain_high", "certain_zero"],
-  "certain_low_it": ["certain_high_it", "certain_it"],
-  //"attack_prior": ["wave_prior"],
-  "np_cost": ["pro_cost"]
-}
+//var params_transfer = {
+//  "certain_low": ["certain_high", "certain_zero"],
+//  "certain_low_it": ["certain_high_it", "certain_it"],
+//  "attack_prior": ["wave_prior"],
+//  "np_cost": ["pro_cost"]
+//}
 
 //var params_transfer = {
 //  "certain_low": ["certain_high"],
@@ -1525,7 +1563,12 @@ var params_transfer = {
 //  "np_cost": ["pro_cost"]
 //}
 
-//var params_transfer = {}
+var params_transfer = {}
+
+//var params_transfer = {
+//  "attack_prior": ["wave_prior"],
+//  "np_cost": ["pro_cost"]
+//}
 
 //var params_transfer = {"attack_prior": ["wave_prior"]}
 
@@ -1566,11 +1609,15 @@ var params = {
 */
 
 //var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "p_np", "p_pro", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], [])
-//var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "p_np", "p_pro", "certain_low", "certain_low_it", "certain_clean", "certain_clean_it"], [])
+var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], [])
+//var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "p_np", "p_pro", "certain_low", "certain_low_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], [])
+//var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "certain_low", "certain_low_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"], [])
+//var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "p_np", "p_pro", "certain_low", "certain_low_it", "certain_clean", "certain_clean_it"], [])
 //var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "jump_over_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "p_np", "p_pro", "certain_low", "certain_low_it", "certain_clean", "certain_clean_it"], [])
-var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, ["alpha", "np_cost", "pro_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "p_np", "p_pro", "certain_low", "certain_low_it", "certain_clean", "certain_clean_it"], [])
+//var estimates = randomWalk({params: params, params_transfer: params_transfer, score: 0}, ["p_np", "p_pro", "alpha", "np_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "certain_low", "certain_low_it", "certain_clean", "certain_clean_it"], [])
 console.log(estimates)
 json.write("params_point.json", estimates.params)
+
 
 //modelScore(modelMainExps, {speaker: speaker1, listener: listener0, actions: actions, cost: 'both'}, params, 1)
 
@@ -1662,12 +1709,14 @@ var params = {
   alpha: 1,
   np_cost: 0,
   pro_cost: 0,
-  jump_over_prior: 0.5,
-  wave_prior: 0.5,
-  attack_prior: 0.5,
-  throw_rock_prior: 0.5,
-  train_prior: 0.5,
-  revision_prior: 0.5,
+  jump_over_prior: 0.2,
+  wave_prior: 0.2,
+  attack_prior: 0.2,
+  throw_rock_prior: 0.2,
+  train_prior: 0.2,
+  revision_prior: 0.2,
+  p_np: 0.8,
+  p_pro: 0.1,
   certain_low: 0.5,
   certain_low_it: 0.5,
   certain_high: 0.5,
@@ -1683,7 +1732,6 @@ var params = {
   agent_bias: -1
 }
 
-
 var param_list = ["alpha", "np_cost", "pro_cost", "jump_over_prior", "wave_prior", "attack_prior", "throw_rock_prior", "train_prior", "revision_prior", "certain_low", "certain_low_it", "certain_high", "certain_high_it", "certain_clean", "certain_clean_it", "certain_zero", "certain_it"];
 var result_array = []
 
@@ -1691,17 +1739,24 @@ map
 (
   function(i)
   {
+    //var params_transfer = {
+    //  "certain_low": ["certain_high", "certain_zero"],
+    //  "certain_low_it": ["certain_high_it", "certan_it"],
+    //  //"attack_prior": ["wave_prior"],
+    //  "np_cost": ["pro_cost"]
+    //}
+
     var params_transfer = {}
+
     var local_param_list = param_list.slice(0, i).concat(param_list.slice(i+1))
     var estimates = randomWalk({params: params, params_transfer: params_transfer, score: -1}, local_param_list, [])
     console.log(estimates)
     result_array.push({param: param_list[i], estimates: estimates})
-    json.write("likelihood3.json", result_array)
+    json.write("likelihood3_baseline.json", result_array)
   },
   [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 )
 */
-
 
 //json.write("params_manual.json", params)
 //var params = json.read("params.json")
