@@ -13,14 +13,16 @@ library(bslib)
 
 source("rsa.R")
 
-listener = listener0
+listener = listener2
 speaker = speaker1
 
-default_params = read_json("params_manual_salience.json")
+#default_params = read_json("params_manual_salience.json")
+default_params = read_json("params_baseline.json")
 #default_params = read_json("params_manual_replacement.json")
 #default_params = read_json("params_manual_patient_only.json")
 #default_params = read_json("params_manual_np_bias.json")
 #default_params = read_json("params.json")
+#default_params = read_json("params_point.json")
 
 #default_params = read_json("optimal_params.json")
 #default_params$replacement_prior = 0.5
@@ -36,6 +38,7 @@ ui <- page_fillable(
     layout_columns(
         wellPanel(
         card(
+            selectizeInput('preset', label = NULL, multiple = FALSE, choices = c("Baseline" = "baseline", "Pragmatic listener" = "pragmatic", "Best rational model" = "best_rational", "Flat actions" = "flat_actions", "Flat actions and events" = "flat_priors", "Semi-pragmatic speaker" = "simple"), select = "baseline"),
             layout_columns(
              checkboxGroupInput(
                 "prod_datasets",
@@ -46,7 +49,7 @@ ui <- page_fillable(
                   "Post-surprising" = "postsurprising",
                   "Neutral" = "neutral"
                 ),
-                select = c("familiar", "surprising")
+                select = c("familiar", "surprising", "postsurprising", "neutral")
               ),
              layout_columns(
                  checkboxGroupInput( 
@@ -56,8 +59,8 @@ ui <- page_fillable(
                       "Low noise" = "low_noise", 
                       "High noise" = "high_noise", 
                       "No noise" = "clean"
-                    )#,
-                    #select = "low_noise"
+                    ),
+                    select = c("low_noise", "high_noise", "clean")
                   ),
                 actionButton("reset", "Reset to defaults"),
                 col_widths = c(10, 9)
@@ -72,8 +75,8 @@ ui <- page_fillable(
                 sliderInput("wave_prior", "Wave:", min = 0, max = 1.0, ticks = FALSE, value = default_params$wave_prior),
                 sliderInput("attack_prior", "Attack:", min = 0, max = 1.0, ticks = FALSE, value = default_params$attack_prior),
                 sliderInput("throw_rock_prior", "Throw a rock:", min = 0, max = 1.0, ticks = FALSE, value = default_params$throw_rock_prior),
-                #sliderInput("overall_prior", "Overall:", min = 0, max = 1.0, ticks = FALSE, value = 1 - default_params$salience_prior),
-                #actionButton("adjust_action_priors", "Re-adjust")
+                sliderInput("overall_prior", "Overall:", min = 0, max = 1.0, ticks = FALSE, value = 1 - default_params$salience_prior),
+                actionButton("adjust_action_priors", "Re-adjust")
             ),
             card(
                 card_header("Speaker rationality:"),
@@ -81,28 +84,30 @@ ui <- page_fillable(
             ),
             col_widths = c(10, 10)),
             layout_columns(
-            #card(
-            #    card_header("Antecedent position:"),
-            #     selectizeInput('preset', label = NULL, multiple = FALSE, choices = c("Best regular priors" = "normal", "Best flat patient" = "flat"), select = "normal"),
-            #     checkboxInput("flat_patient", "Flat prior for patient:", FALSE),
-            #     sliderInput("replacement_prior", NULL, min = 0, max = 1.0, ticks = FALSE, value = default_params$replacement_prior),
-                #  selectizeInput(
-                #      'preset',
-                #      label = NULL,
-                #      multiple = FALSE,
-                #      choices = c(
-                #       "Salience prior" = "salience",
-                #       "Prior for patient only" = "patient",
-                #       "Symmetric NP bias" = "symmetric",
-                #       "Asymmetric NP bias" = "asymmetric"
-                #     ),
-                #     select = "patient"
-                # ),
-                # sliderInput("salience_prior", "Salience prior:", min = 0, max = 1.0, ticks = FALSE, value = default_params$salience_prior),
-                # sliderInput("agent_bias", "Prior for patient only:", min = 0, max = 1.0, ticks = FALSE, value = default_params$agent_bias),
-                # sliderInput("np_bias", "Agent NP bias:", min = 0, max = 1.0, ticks = FALSE, value = default_params$np_bias),
-                # sliderInput("np_bias2", "Patient NP bias:", min = 0, max = 1.0, ticks = FALSE, value = default_params$np_bias2)
-            #),
+            card(
+                card_header("Patient antecedents:"),
+                 checkboxInput("flat_actions", "Flat action priors", FALSE),
+                 checkboxInput("flat_events", "Flat strength priors", FALSE),
+                 sliderInput("replacement_prior", NULL, min = 0, max = 1.0, ticks = FALSE, value = default_params$replacement_prior),
+                 sliderInput("p_np", NULL, min = 0, max = 1.0, ticks = FALSE, value = default_params$p_np),
+                 sliderInput("p_pro", NULL, min = 0, max = 1.0, ticks = FALSE, value = default_params$p_pro),
+                 #  selectizeInput(
+                 #      'preset',
+                 #      label = NULL,
+                 #      multiple = FALSE,
+                 #      choices = c(
+                 #       "Salience prior" = "salience",
+                 #       "Prior for patient only" = "patient",
+                 #       "Symmetric NP bias" = "symmetric",
+                 #       "Asymmetric NP bias" = "asymmetric"
+                 #     ),
+                 #     select = "patient"
+                 # ),
+                 # sliderInput("salience_prior", "Salience prior:", min = 0, max = 1.0, ticks = FALSE, value = default_params$salience_prior),
+                 # sliderInput("agent_bias", "Prior for patient only:", min = 0, max = 1.0, ticks = FALSE, value = default_params$agent_bias),
+                 # sliderInput("np_bias", "Agent NP bias:", min = 0, max = 1.0, ticks = FALSE, value = default_params$np_bias),
+                 # sliderInput("np_bias2", "Patient NP bias:", min = 0, max = 1.0, ticks = FALSE, value = default_params$np_bias2)
+            ),
             card(
                 card_header("Monster strength:"),
                 sliderInput("train_prior", "Trained prior:", min = 0, max = 1.0, ticks = FALSE, value = default_params$train_prior),
@@ -206,15 +211,18 @@ recalculatePrior <- function(action_prior, overall_prior)
 loadParams <- function(file, session)
 {
     default_params = read_json(file)
-
+    
     updateSliderInput(session, "alpha", value = default_params$alpha)
     updateSliderInput(session, "jump_over_prior", value = default_params$jump_over_prior)
     updateSliderInput(session, "wave_prior", value = default_params$wave_prior)
     updateSliderInput(session, "attack_prior", value = default_params$attack_prior)
     updateSliderInput(session, "throw_rock_prior", value = default_params$throw_rock_prior)
-    #updateSliderInput(session, "overall_prior", value = 1 - default_params$salience_prior)
-    #updateCheckboxInput(session, "flat_patient", value = default_params$flat_patient)
-    #updateSliderInput(session, "replacement_prior", value = default_params$replacement_prior)
+    updateSliderInput(session, "overall_prior", value = 1 - default_params$salience_prior)
+    updateCheckboxInput(session, "flat_actions", value = default_params$flat_actions)
+    updateCheckboxInput(session, "flat_events", value = default_params$flat_events)
+    updateSliderInput(session, "replacement_prior", value = default_params$replacement_prior)
+    updateSliderInput(session, "p_np", value = default_params$p_np)
+    updateSliderInput(session, "p_pro", value = default_params$p_pro)
     #updateSliderInput(session, "agent_bias", value = default_params$agent_bias)
     #updateSliderInput(session, "np_bias", value = default_params$np_bias)
     #updateSliderInput(session, "np_bias2", value = default_params$np_bias2)
@@ -231,29 +239,54 @@ loadParams <- function(file, session)
     updateSliderInput(session, "error_clean", value = 1 - default_params$certain_clean)
     updateSliderInput(session, "error_clean_it", value = 1 - default_params$certain_clean_it)
     #updateSelectInput(session, "preset", select = "patient")
+    
+    if (default_params$listener == "pragmatic") listener <<- listener2
+    else listener <<- listener0
+
+    if (default_params$speaker == "simple") speakerN <<- speakerN_simple
+    else speakerN <<- speakerN_full
 }
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session)
 {
+    shinyjs::hide("replacement_prior")
+    shinyjs::hide("p_np")
+    shinyjs::hide("p_pro")
     
     output$model_title = renderText({"Model predictions"})
     output$data_title = renderText({"Observed data"})
     
     observeEvent(input$preset,
     {
-        if (input$preset == "normal")
-            loadParams("params_manual_salience.json", session)
-        else
-            loadParams("params_manual_replacement.json", session)
+        if (input$preset == "baseline")
+            loadParams("params_baseline.json", session)
+        else if (input$preset == "pragmatic")
+            loadParams("params_pragmatic_listener.json", session)
+        else if (input$preset == "best_rational")
+            loadParams("params_best_rational.json", session)
+        else if (input$preset == "flat_actions")
+            loadParams("params_flat_actions.json", session)
+        else if (input$preset == "flat_priors")
+            loadParams("params_flat_priors.json", session)
+        else if (input$preset == "simple")
+            loadParams("params_simple_speaker.json", session)
     })
     
     observeEvent(input$reset,
     {
-        #if (input$preset == "normal")
-            loadParams("params_manual_salience.json", session)
-        #else
-        #    loadParams("params_manual_replacement.json", session)
+        if (input$preset == "baseline")
+            loadParams("params_baseline.json", session)
+        else if (input$preset == "pragmatic")
+            loadParams("params_pragmatic_listener.json", session)
+        else if (input$preset == "best_rational")
+            loadParams("params_best_rational.json", session)
+        else if (input$preset == "flat_actions")
+            loadParams("params_flat_actions.json", session)
+        else if (input$preset == "flat_priors")
+            loadParams("params_flat_priors.json", session)
+        else if (input$preset == "simple")
+            loadParams("params_simple_speaker.json", session)
     })
     
     # observeEvent(input$preset,
@@ -385,9 +418,12 @@ server <- function(input, output, session)
         utterances = utterances,
         meaning = meaning,
         alpha = input$alpha,
-        salience_prior = 0.5,#1 - input$overall_prior,
-        flat_patient = FALSE,#input$flat_patient,
-        replacement_prior = 0.5,#input$replacement_prior,
+        salience_prior = 1 - input$overall_prior,
+        flat_actions = input$flat_actions,
+        flat_events = input$flat_events,
+        replacement_prior = input$replacement_prior,
+        p_np = input$p_np,
+        p_pro = input$p_pro,
         np_bias = 0.5,
         np_bias2 = 0.5,
         agent_bias = 0.5,

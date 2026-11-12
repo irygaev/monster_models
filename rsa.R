@@ -360,7 +360,7 @@ speaker0 <- function(state, params){
     return(dist)
 }
 
-speakerN <- function(n, state, params){
+speakerN_full <- function(n, state, params){
     if (n == 0) {
         return(speaker0(state, params))
     }
@@ -370,7 +370,75 @@ speakerN <- function(n, state, params){
         
         listener_params = params
         listener_params$salience_prior = ifelse(state == "agent_falls" | params$agent_bias == 0.5, params$salience_prior, params$agent_bias)
-        listener_params$action_prior = ifelse(state == "agent_falls" | params$flat_patient == FALSE, params$action_prior, params$replacement_prior)
+        listener_params$action_prior = ifelse(state == "agent_falls" | params$flat_actions == FALSE, params$action_prior, params$replacement_prior)
+        #listener_params$action_prior = ifelse(state == "agent_falls", params$action_prior, params$action_prior * params$replacement_prior)
+        
+        listener_params$patient_color =
+            ifelse(params$event_type == "familiar", ifelse(state == 'patient_falls', 'blue', 'red'),
+            ifelse(params$event_type == "surprising", ifelse(state == 'patient_falls', 'red', 'blue'),
+            ifelse(params$event_type == "postsurprising", ifelse(state == 'patient_falls', 'blue', 'red'),
+            'yellow')))
+        
+        listener_params$patient_color = ifelse(state == 'agent_falls' | params$flat_events == FALSE, listener_params$patient_color, 'yellow')
+
+        for (utterance in params$utterances){
+            
+            utterance_prior <- utterancePrior(utterance, state, params)
+            
+            sum_likelihood <- 0
+            
+            for (p_utt in params$utterances){
+                confusion_prob = confusionProb(utterance, p_utt, params)
+                #confusion_prob = ifelse(utterance == p_utt, 1, 0)
+
+                log_likelihood = log(listenerN(n - 1, p_utt, listener_params)[[state]])
+                
+                sum_likelihood <- sum_likelihood + ifelse(confusion_prob == 0, 0, confusion_prob * log_likelihood)
+            }
+            
+            utility <- exp(ifelse(params$alpha == 0, 0, params$alpha * sum_likelihood))
+            
+            p <- utterance_prior * utility
+    
+            dist[[utterance]] <- p
+        }
+    
+        s <- sum(unlist(dist))
+        
+        for (utterance in params$utterances){
+            dist[[utterance]] <- ifelse(s == 0, 1 / length(params$utterances), dist[[utterance]] / s)
+        }
+        
+        return(dist)
+    }
+}
+
+speakerN_simple <- function(n, state, params){
+    if (n == 0) {
+        return(speaker0(state, params))
+    }
+    else if (state == 'patient_falls')
+    {
+        p_np <- params$p_np
+        p_pro <- (1 - p_np) * params$p_pro
+        p_zero <- 1 - p_np - p_pro
+        
+        dist = list()
+        
+        dist[['the_agent']] = 0
+        dist[['the_patient']] = p_np
+        dist[['pro']] = p_pro
+        dist[['zero']] = p_zero
+        
+        return(dist)
+    }
+    else
+    {
+        dist = list()
+        
+        listener_params = params
+        listener_params$salience_prior = ifelse(state == "agent_falls" | params$agent_bias == 0.5, params$salience_prior, params$agent_bias)
+        listener_params$action_prior = ifelse(state == "agent_falls" | params$flat_actions == FALSE, params$action_prior, params$replacement_prior)
         #listener_params$action_prior = ifelse(state == "agent_falls", params$action_prior, params$action_prior * params$replacement_prior)
         
         listener_params$patient_color =
@@ -411,10 +479,15 @@ speakerN <- function(n, state, params){
     }
 }
 
+speakerN <- speakerN_full
+
 speaker1 <- function(state, params) {
     return (speakerN(1, state, params))
 }
 
+speaker1_simple <- function(state, params) {
+    return (speakerN_simple(1, state, params))
+}
 
 #speaker1("patient_falls", test_params)
 
@@ -425,6 +498,8 @@ speaker1 <- function(state, params) {
 #speaker1("patient_falls", params_familiar)
 
 pragmaticSpeaker <- speaker1
+
+pragmaticSpeaker_simple <- speaker1
 
 speaker2 <- function(state, params) {
     return (speakerN(2, state, params))
